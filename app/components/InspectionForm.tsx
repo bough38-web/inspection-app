@@ -8,11 +8,13 @@ export function InspectionForm() {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [form, setForm] = useState({
         branch: '',
         name: '',
         contract_no: '',
-        business_name: ''
+        business_name: '',
+        activity_type: ''
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +32,11 @@ export function InspectionForm() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
+            // Limit total photos to 3
+            if (photos.length + newFiles.length > 3) {
+                alert("사진은 최대 3장까지만 등록 가능합니다.");
+                return;
+            }
             setPhotos(prev => [...prev, ...newFiles]);
 
             const newUrls = newFiles.map(file => URL.createObjectURL(file));
@@ -44,8 +51,8 @@ export function InspectionForm() {
 
     async function submit(e: React.FormEvent) {
         e.preventDefault();
-        if (!form.branch || !form.name || !form.contract_no || !form.business_name) {
-            alert('모든 필드(지사 포함)를 입력해주세요.');
+        if (!form.branch || !form.name || !form.contract_no || !form.business_name || !form.activity_type) {
+            alert('모든 필드(활동 내역 포함)를 입력해주세요.');
             return;
         }
 
@@ -81,12 +88,13 @@ export function InspectionForm() {
                 branch: '',
                 name: '',
                 contract_no: '',
-                business_name: ''
+                business_name: '',
+                activity_type: ''
             });
             setPhotos([]);
             setImageUrls([]);
         } catch (err: any) {
-            alert(`제출 실패: ${err.message}`);
+            setErrorMessage(err.message || '알 수 없는 오류가 발생했습니다.');
         } finally {
             setLoading(false);
         }
@@ -125,6 +133,12 @@ export function InspectionForm() {
                     </button>
                 </div>
 
+                {errorMessage && (
+                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm break-keep">
+                        <b>오류 발생:</b><br />{errorMessage}
+                    </div>
+                )}
+
                 <div className="flex flex-col space-y-1">
                     <label className="text-sm font-medium text-gray-700">지사 선택</label>
                     <select
@@ -159,8 +173,22 @@ export function InspectionForm() {
                     onChange={e => setForm({ ...form, business_name: e.target.value })}
                 />
 
+                <div className="flex flex-col space-y-1">
+                    <label className="text-sm font-medium text-gray-700">활동 내역</label>
+                    <select
+                        value={form.activity_type}
+                        onChange={e => setForm({ ...form, activity_type: e.target.value })}
+                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                    >
+                        <option value="">활동 내역을 선택하세요</option>
+                        <option value="고객소통">1. 고객소통 : 안부인사 및 불편사항 점검, 보안 이슈 사전 청취</option>
+                        <option value="외관 환경 점검">2. 외관 환경 점검 : 표지판(스티커)교체, 장비 이물질 제거(환경개선)</option>
+                        <option value="시스템 점검">3. 시스템 점검 : 카메라, 영상저장장치 리더기, 락 정상 작동여부 확인</option>
+                    </select>
+                </div>
+
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">현장 사진</label>
+                    <label className="text-sm font-medium text-gray-700">현장 사진 (최대 3장)</label>
                     <div className="grid grid-cols-3 gap-2">
                         {imageUrls.map((url, idx) => (
                             <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200">
@@ -174,23 +202,27 @@ export function InspectionForm() {
                                 </button>
                             </div>
                         ))}
-                        <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
-                        >
-                            +
-                        </button>
+                        {imageUrls.length < 3 && (
+                            <button
+                                type="button"
+                                onClick={() => fileInputRef.current?.click()}
+                                className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
+                            >
+                                +
+                            </button>
+                        )}
                     </div>
                     <input
                         type="file"
                         ref={fileInputRef}
                         className="hidden"
-                        multiple
                         accept="image/*"
+                        // multiple Removed to make it easier to control count, or keep it but slice?
+                        // Let's keep multiple but check count in handler
+                        multiple
                         onChange={handleImageChange}
                     />
-                    <p className="text-xs text-gray-500">최소 1장 이상의 사진을 등록해주세요.</p>
+                    <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
                 </div>
             </div>
 

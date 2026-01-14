@@ -10,14 +10,42 @@ interface Inspection {
     contract_no: string;
     business_name: string;
     photo_count: number;
+    activity_type: string; // Added activity_type
 }
 
 export function AdminDashboard() {
     const [inspections, setInspections] = useState<Inspection[]>([]);
-    const [mounted, setMounted] = useState(false);
+    const [loading, setLoading] = useState(true); // Changed from mounted to loading
+
+    const downloadCSV = () => {
+        const headers = ['ID', '날짜', '지사', '담당자', '계약번호', '상호명', '활동내역', '사진수'];
+        const csvRows = [
+            headers.join(','),
+            ...inspections.map(i => [
+                i.id,
+                new Date(i.created_at).toLocaleDateString(),
+                i.branch,
+                i.name,
+                `'${i.contract_no}`, // Prevent Excel scientific notation
+                i.business_name,
+                i.activity_type || '-',
+                i.photo_count
+            ].map(v => `"${v}"`).join(','))
+        ];
+
+        const csvContent = '\uFEFF' + csvRows.join('\n'); // Add BOM for Korean support
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `현장점검_내역_${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     useEffect(() => {
-        setMounted(true);
+        // setMounted(true); // Removed as per instruction's state change
         fetch('/api/inspections')
             .then(res => res.json())
             .then(data => setInspections(data))
@@ -42,13 +70,25 @@ export function AdminDashboard() {
     const sortedBranches = Object.entries(branchStats).sort((a, b) => b[1] - a[1]);
     const maxCount = Math.max(...Object.values(branchStats), 1);
 
-    if (!mounted) return null;
+    if (loading) return <div className="max-w-6xl mx-auto p-6 text-center text-gray-500">로딩 중...</div>;
+
 
     return (
         <div className="max-w-6xl mx-auto p-6 space-y-8">
             <header className="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div>
-                    <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
+                <div className="flex flex-col">
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-3xl font-bold text-gray-800">관리자 대시보드</h1>
+                        <button
+                            onClick={downloadCSV}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            엑셀 다운로드
+                        </button>
+                    </div>
                     <p className="text-sm text-gray-500 mt-1">지사별 등록 현황 및 파일 다운로드</p>
                 </div>
                 <div className="bg-blue-50 px-4 py-2 rounded-lg">

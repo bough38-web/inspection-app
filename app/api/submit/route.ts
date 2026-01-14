@@ -30,6 +30,8 @@ export async function POST(req: Request) {
         name: data.name,
         contract_no: data.contract_no,
         business_name: data.business_name,
+        // Make sure to create this column: alter table inspections add column activity_type text;
+        activity_type: form.get('activity_type'),
         status: 'submitted',
         folder_path: relativePath,
         photo_count: photos.length
@@ -51,7 +53,9 @@ export async function POST(req: Request) {
           upsert: true
         });
 
-      if (uploadError) console.error('Upload Error:', uploadError);
+      if (uploadError) {
+        throw uploadError;
+      }
     }
 
     return NextResponse.json({ ok: true });

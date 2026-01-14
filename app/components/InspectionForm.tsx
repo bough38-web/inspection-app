@@ -25,7 +25,8 @@ export function InspectionForm() {
             branch: '중앙',
             name: '김철수',
             contract_no: '12345678',
-            business_name: '테스트 상점'
+            business_name: '테스트 상점',
+            activity_type: '고객소통'
         });
     };
 

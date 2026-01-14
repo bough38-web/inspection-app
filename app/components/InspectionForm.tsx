@@ -58,6 +58,7 @@ export function InspectionForm() {
         fd.append('mock_mode', 'true');
 
         try {
+            // Sending submission to Supabase
             const res = await fetch('/api/submit', { method: 'POST', body: fd });
             if (!res.ok) {
                 const errorData = await res.json().catch(() => ({}));

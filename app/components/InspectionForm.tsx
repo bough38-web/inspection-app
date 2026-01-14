@@ -59,7 +59,10 @@ export function InspectionForm() {
 
         try {
             const res = await fetch('/api/submit', { method: 'POST', body: fd });
-            if (!res.ok) throw new Error('Submission failed');
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                throw new Error(errorData.error || `Server Error: ${res.status}`);
+            }
 
             // Save to LocalStorage for Admin Demo
             const newInspection = {
@@ -81,8 +84,8 @@ export function InspectionForm() {
             });
             setPhotos([]);
             setImageUrls([]);
-        } catch (err) {
-            alert('오류가 발생했습니다. 다시 시도해주세요.');
+        } catch (err: any) {
+            alert(`제출 실패: ${err.message}`);
         } finally {
             setLoading(false);
         }

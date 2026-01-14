@@ -14,7 +14,16 @@ export function InspectionForm() {
         name: '',
         contract_no: '',
         business_name: '',
-        activity_type: ''
+        activeCategory: '' as 'customer' | 'appearance' | 'system' | '',
+        subItems: {
+            customer_1: '',
+            customer_2: '',
+            appearance_1: '',
+            appearance_2: '',
+            system_1: '',
+            system_2: '',
+            system_3: ''
+        }
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -26,7 +35,16 @@ export function InspectionForm() {
             name: '김철수',
             contract_no: '12345678',
             business_name: '테스트 상점',
-            activity_type: '고객소통'
+            activeCategory: 'system',
+            subItems: {
+                customer_1: '양호',
+                customer_2: '양호',
+                appearance_1: '양호',
+                appearance_2: '양호',
+                system_1: '양호',
+                system_2: '양호',
+                system_3: '양호'
+            }
         });
     };
 
@@ -52,15 +70,47 @@ export function InspectionForm() {
 
     async function submit(e: React.FormEvent) {
         e.preventDefault();
-        if (!form.branch || !form.name || !form.contract_no || !form.business_name || !form.activity_type) {
-            alert('모든 필드(활동 내역 포함)를 입력해주세요.');
+
+        let isValid = false;
+        let finalActivityType = '';
+
+        if (!form.activeCategory) {
+            alert('활동 종류(고객소통/외관점검/시스템점검)를 선택해주세요.');
+            return;
+        }
+
+        // Validate based on active category
+        if (form.activeCategory === 'customer') {
+            if (form.subItems.customer_1 && form.subItems.customer_2) {
+                isValid = true;
+                finalActivityType = `[고객소통] 안부:${form.subItems.customer_1}, 보안:${form.subItems.customer_2}`;
+            }
+        } else if (form.activeCategory === 'appearance') {
+            if (form.subItems.appearance_1 && form.subItems.appearance_2) {
+                isValid = true;
+                finalActivityType = `[외관점검] 표지판:${form.subItems.appearance_1}, 이물질:${form.subItems.appearance_2}`;
+            }
+        } else if (form.activeCategory === 'system') {
+            if (form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) {
+                isValid = true;
+                finalActivityType = `[시스템점검] 카메라:${form.subItems.system_1}, 리더기:${form.subItems.system_2}, 락:${form.subItems.system_3}`;
+            }
+        }
+
+        if (!isValid || !form.branch || !form.name || !form.contract_no || !form.business_name) {
+            alert('필수 항목을 모두 입력/선택해주세요.');
             return;
         }
 
         setLoading(true);
         const fd = new FormData();
         photos.forEach(p => fd.append('photos', p));
-        Object.keys(form).forEach(k => fd.append(k, (form as any)[k]));
+
+        fd.append('branch', form.branch);
+        fd.append('name', form.name);
+        fd.append('contract_no', form.contract_no);
+        fd.append('business_name', form.business_name);
+        fd.append('activity_type', finalActivityType);
 
         // Flag to tell server to mock the DB if needed
         fd.append('mock_mode', 'true');
@@ -78,6 +128,7 @@ export function InspectionForm() {
                 id: Date.now().toString(),
                 created_at: new Date().toISOString(),
                 ...form,
+                activity_type: finalActivityType,
                 photo_count: photos.length
             };
             const existing = JSON.parse(localStorage.getItem('mock_inspections') || '[]');
@@ -90,7 +141,16 @@ export function InspectionForm() {
                 name: '',
                 contract_no: '',
                 business_name: '',
-                activity_type: ''
+                activeCategory: '',
+                subItems: {
+                    customer_1: '',
+                    customer_2: '',
+                    appearance_1: '',
+                    appearance_2: '',
+                    system_1: '',
+                    system_2: '',
+                    system_3: ''
+                }
             });
             setPhotos([]);
             setImageUrls([]);
@@ -174,18 +234,155 @@ export function InspectionForm() {
                     onChange={e => setForm({ ...form, business_name: e.target.value })}
                 />
 
-                <div className="flex flex-col space-y-1">
-                    <label className="text-sm font-medium text-gray-700">활동 내역</label>
-                    <select
-                        value={form.activity_type}
-                        onChange={e => setForm({ ...form, activity_type: e.target.value })}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                    >
-                        <option value="">활동 내역을 선택하세요</option>
-                        <option value="고객소통">1. 고객소통 : 안부인사 및 불편사항 점검, 보안 이슈 사전 청취</option>
-                        <option value="외관 환경 점검">2. 외관 환경 점검 : 표지판(스티커)교체, 장비 이물질 제거(환경개선)</option>
-                        <option value="시스템 점검">3. 시스템 점검 : 카메라, 영상저장장치 리더기, 락 정상 작동여부 확인</option>
-                    </select>
+                <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
+                    <h3 className="font-semibold text-gray-700 mb-2">활동 내역 상세</h3>
+
+                    {/* Category Buttons */}
+                    <div className="flex space-x-2 mb-4">
+                        <button
+                            type="button"
+                            onClick={() => setForm({ ...form, activeCategory: 'customer' })}
+                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'customer'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                }`}
+                        >
+                            고객소통
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setForm({ ...form, activeCategory: 'appearance' })}
+                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'appearance'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                }`}
+                        >
+                            외관점검
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setForm({ ...form, activeCategory: 'system' })}
+                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'system'
+                                    ? 'bg-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                }`}
+                        >
+                            시스템점검
+                        </button>
+                    </div>
+
+                    {/* Dynamic Content based on Active Category */}
+                    {form.activeCategory === 'customer' && (
+                        <div className="space-y-3 animate-fadeIn">
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">1. 안부인사 및 불편사항 점검</label>
+                                <select
+                                    value={form.subItems.customer_1}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_1: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">2. 보안 이슈 사전 청취</label>
+                                <select
+                                    value={form.subItems.customer_2}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {form.activeCategory === 'appearance' && (
+                        <div className="space-y-3 animate-fadeIn">
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">1. 표지판(스티커) 교체</label>
+                                <select
+                                    value={form.subItems.appearance_1}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_1: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">2. 장비 이물질 제거(환경개선)</label>
+                                <select
+                                    value={form.subItems.appearance_2}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_2: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {form.activeCategory === 'system' && (
+                        <div className="space-y-3 animate-fadeIn">
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">1. 카메라 정상 작동 확인</label>
+                                <select
+                                    value={form.subItems.system_1}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_1: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">2. 영상저장장치 리더기 점검</label>
+                                <select
+                                    value={form.subItems.system_2}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_2: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                            <div className="flex flex-col space-y-1">
+                                <label className="text-sm font-medium text-gray-700">3. 락 정상 작동여부 확인</label>
+                                <select
+                                    value={form.subItems.system_3}
+                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_3: e.target.value } })}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                >
+                                    <option value="">상태 선택</option>
+                                    <option value="양호">양호</option>
+                                    <option value="조치필요">조치필요</option>
+                                    <option value="해당없음">해당없음</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
+                    {!form.activeCategory && (
+                        <div className="text-center py-4 text-gray-500 text-sm">
+                            상단 버튼을 눌러 점검 항목을 선택해주세요.
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-2">

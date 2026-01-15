@@ -184,7 +184,7 @@ export function InspectionForm() {
         <form onSubmit={submit} className="w-full max-w-md mx-auto space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
             <div className="space-y-4">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">현장 점검 등록</h2>
+                    <h2 className="text-xl font-bold text-gray-800">현장 점검 등록 <span className="text-sm text-blue-500 font-normal">(v2.0 New)</span></h2>
                     <button
                         type="button"
                         onClick={fillMockData}
@@ -243,8 +243,8 @@ export function InspectionForm() {
                             type="button"
                             onClick={() => setForm({ ...form, activeCategory: 'customer' })}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'customer'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             고객소통
@@ -253,8 +253,8 @@ export function InspectionForm() {
                             type="button"
                             onClick={() => setForm({ ...form, activeCategory: 'appearance' })}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'appearance'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             외관점검
@@ -263,8 +263,8 @@ export function InspectionForm() {
                             type="button"
                             onClick={() => setForm({ ...form, activeCategory: 'system' })}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'system'
-                                    ? 'bg-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                                 }`}
                         >
                             시스템점검

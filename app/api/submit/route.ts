@@ -21,11 +21,10 @@ export async function POST(req: Request) {
 
   const today = new Date();
   const dateFolder = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  // Sanitize folder names to prevent "Invalid key" errors (replace spaces with underscores, and encode for S3)
-  const safeBusinessName = encodeURIComponent(data.business_name.replace(/\s+/g, '_'));
-  const safeContractNo = data.contract_no.replace(/\s+/g, '');
-  const safeBranch = encodeURIComponent(data.branch);
-  const relativePath = `${dateFolder}/${safeBranch}/${safeContractNo}_${safeBusinessName}`;
+  // Sanitize folder names: Use Random String to guarantee S3 compatibility (Avoids Korean text & crypto dependencies)
+  const folderUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  const relativePath = `${dateFolder}/${folderUUID}`;
+  // Store readable metadata in database, but keep storage path purely ASCII safe.
 
   try {
     validateForm(data);

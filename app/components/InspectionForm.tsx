@@ -291,7 +291,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -304,7 +304,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -322,7 +322,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -335,7 +335,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -353,7 +353,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -366,7 +366,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>
@@ -379,7 +379,7 @@ export function InspectionForm() {
                                 >
                                     <option value="">상태 선택</option>
                                     <option value="양호">양호</option>
-                                    <option value="조치필요">조치필요</option>
+                                    <option value="조치완료">조치완료</option>
                                     <option value="해당없음">해당없음</option>
                                 </select>
                             </div>

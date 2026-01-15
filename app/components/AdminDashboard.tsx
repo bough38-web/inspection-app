@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { Button } from './ui/Button';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 interface Inspection {
     id: string;
@@ -10,38 +12,143 @@ interface Inspection {
     contract_no: string;
     business_name: string;
     photo_count: number;
-    activity_type: string; // Added activity_type
+    activity_type: string;
+    folder_path: string;
 }
+
+// Helper to convert WebP Blob to PNG (ExcelJS requires PNG/JPEG)
+const convertWebPToPNG = async (blob: Blob): Promise<ArrayBuffer> => {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(img, 0, 0);
+                canvas.toBlob((pngBlob) => {
+                    if (pngBlob) {
+                        pngBlob.arrayBuffer().then(resolve).catch(reject);
+                    } else {
+                        reject(new Error('Canvas to Blob failed'));
+                    }
+                }, 'image/png');
+            } else {
+                reject(new Error('Canvas context failed'));
+            }
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(blob);
+    });
+};
 
 export function AdminDashboard() {
     const [inspections, setInspections] = useState<Inspection[]>([]);
-    const [loading, setLoading] = useState(true); // Changed from mounted to loading
+    const [loading, setLoading] = useState(true);
+    const [generatingExcel, setGeneratingExcel] = useState(false);
+    const [progress, setProgress] = useState(0);
 
-    const downloadCSV = () => {
-        const headers = ['ID', '날짜', '지사', '담당자', '계약번호', '상호명', '활동내역', '사진수'];
-        const csvRows = [
-            headers.join(','),
-            ...inspections.map(i => [
-                i.id,
-                new Date(i.created_at).toLocaleDateString(),
-                i.branch,
-                i.name,
-                `'${i.contract_no}`, // Prevent Excel scientific notation
-                i.business_name,
-                i.activity_type || '-',
-                i.photo_count
-            ].map(v => `"${v}"`).join(','))
-        ];
+    const downloadExcel = async () => {
+        if (generatingExcel) return;
+        setGeneratingExcel(true);
+        setProgress(0);
 
-        const csvContent = '\uFEFF' + csvRows.join('\n'); // Add BOM for Korean support
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `현장점검_내역_${new Date().toISOString().slice(0, 10)}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        try {
+            const workbook = new ExcelJS.Workbook();
+            const sheet = workbook.addWorksheet('현장점검내역');
+
+            // Define Columns
+            sheet.columns = [
+                { header: 'ID', key: 'id', width: 15 },
+                { header: '날짜', key: 'date', width: 15 },
+                { header: '지사', key: 'branch', width: 10 },
+                { header: '담당자', key: 'name', width: 10 },
+                { header: '계약번호', key: 'contract_no', width: 15 },
+                { header: '상호명', key: 'business_name', width: 20 },
+                { header: '활동내역', key: 'activity_type', width: 40 },
+                { header: '사진1', key: 'photo1', width: 20 },
+                { header: '사진2', key: 'photo2', width: 20 },
+                { header: '사진3', key: 'photo3', width: 20 },
+            ];
+
+            // Style Header
+            sheet.getRow(1).font = { bold: true };
+            sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+            const total = inspections.length;
+
+            for (let i = 0; i < total; i++) {
+                const item = inspections[i];
+                const rowIndex = i + 2;
+                const row = sheet.getRow(rowIndex);
+
+                // Basic Data
+                row.values = {
+                    id: item.id,
+                    date: new Date(item.created_at).toLocaleDateString(),
+                    branch: item.branch,
+                    name: item.name,
+                    contract_no: item.contract_no,
+                    business_name: item.business_name,
+                    activity_type: item.activity_type || '-',
+                };
+
+                // Set Row Height for Images
+                row.height = 100; // Pixel height approx
+                row.alignment = { vertical: 'middle' };
+
+                // Fetch and Embed Images
+                if (item.folder_path) {
+                    // Loop 3 times for max 3 photos
+                    for (let p = 1; p <= 3; p++) {
+                        const imgPath = `${item.folder_path}/${p}.webp`;
+                        try {
+                            // Fetch via Proxy to bypass CORS/Auth
+                            const res = await fetch(`/api/proxy-image?path=${encodeURIComponent(imgPath)}`);
+                            if (res.ok) {
+                                const webpBlob = await res.blob();
+                                // Convert WebP to PNG for ExcelJS
+                                const pngBuffer = await convertWebPToPNG(webpBlob);
+
+                                const imageId = workbook.addImage({
+                                    buffer: pngBuffer,
+                                    extension: 'png',
+                                });
+
+                                // Add to sheet
+                                // col: 7 is H (0-indexed), 8 is I, 9 is J
+                                const colIndex = 7 + (p - 1);
+
+                                // Proper casting for floating positioning which ExcelJS supports but might have TS issues
+                                sheet.addImage(imageId, {
+                                    tl: { col: colIndex, row: rowIndex - 1 },
+                                    br: { col: colIndex + 1, row: rowIndex },
+                                    editAs: 'oneCell'
+                                } as any);
+                            }
+                        } catch (e) {
+                            // Silent fail for missing images or conversion errors
+                            // console.warn(`Image ${p} skip for row ${rowIndex}`);
+                        }
+                    }
+                }
+
+                // Update Progress
+                setProgress(Math.round(((i + 1) / total) * 100));
+            }
+
+            // Generate Blob and Download
+            const buf = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buf]), `현장점검_내역_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+        } catch (error) {
+            console.error('Excel generation failed:', error);
+            alert('엑셀 생성 중 오류가 발생했습니다. (콘솔 확인 필요)');
+        } finally {
+            setGeneratingExcel(false);
+            setProgress(0);
+        }
     };
 
     useEffect(() => {
@@ -62,7 +169,6 @@ export function AdminDashboard() {
 
     const downloadZip = async (id: string, name: string) => {
         try {
-            // Trigger the download endpoint with the real ID
             window.location.href = `/api/download-zip?id=${id}`;
         } catch (e) {
             alert('다운로드 실패');
@@ -88,13 +194,26 @@ export function AdminDashboard() {
                     <div className="flex justify-between items-center">
                         <h1 className="text-3xl font-bold text-gray-800">관리자 대시보드</h1>
                         <button
-                            onClick={downloadCSV}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+                            onClick={downloadExcel}
+                            disabled={generatingExcel}
+                            className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${generatingExcel ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white`}
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            엑셀 다운로드
+                            {generatingExcel ? (
+                                <span className="flex items-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    생성 중 ({progress}%)
+                                </span>
+                            ) : (
+                                <>
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                    </svg>
+                                    엑셀 다운로드 (이미지 포함)
+                                </>
+                            )}
                         </button>
                     </div>
                     <p className="text-sm text-gray-500 mt-1">지사별 등록 현황 및 파일 다운로드</p>

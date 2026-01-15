@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
+import { compressImageClient } from '@/lib/clientCompress';
 
 export function InspectionForm() {
     const [photos, setPhotos] = useState<File[]>([]);
@@ -48,15 +49,22 @@ export function InspectionForm() {
         });
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const newFiles = Array.from(e.target.files);
-            // Limit total photos to 3
-            if (photos.length + newFiles.length > 3) {
-                alert("사진은 최대 3장까지만 등록 가능합니다.");
+            // Limit to 3 photos total
+            const totalFiles = photos.length + newFiles.length;
+            if (totalFiles > 3) {
+                alert('최대 3장까지만 업로드 가능합니다.');
                 return;
             }
-            setPhotos(prev => [...prev, ...newFiles]);
+
+            // Compress images before adding to state
+            const compressedFiles = await Promise.all(
+                newFiles.map(file => compressImageClient(file))
+            );
+
+            setPhotos((prev) => [...prev, ...compressedFiles]);
 
             const newUrls = newFiles.map(file => URL.createObjectURL(file));
             setImageUrls(prev => [...prev, ...newUrls]);
@@ -418,7 +426,7 @@ export function InspectionForm() {
                         // multiple Removed to make it easier to control count, or keep it but slice?
                         // Let's keep multiple but check count in handler
                         multiple
-                        onChange={handleImageChange}
+                        onChange={handleImageUpload}
                     />
                     <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
                 </div>

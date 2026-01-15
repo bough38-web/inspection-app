@@ -8,38 +8,63 @@ export async function POST(req: Request) {
     console.log("Submit API Called"); // Debug Log
 
     const formData = await req.formData();
-    const dataStr = formData.get('data') as string;
 
-    if (!dataStr) {
-      return NextResponse.json({ error: 'Missing data' }, { status: 400 });
+    // Debug: Log all keys to enable easier debugging
+    console.log("FormData Keys:", Array.from(formData.keys()));
+
+    // Parse individual fields (Frontend sends them directly, NOT as a 'data' JSON string)
+    const branch = formData.get('branch') as string;
+    const name = formData.get('name') as string;
+    const contract_no = formData.get('contract_no') as string;
+    const business_name = formData.get('business_name') as string;
+
+    // Special Handling for 'activity_type': Frontend might send it as string or logic might differ
+    // Based on InspectionForm, it sends 'activeCategory' or 'activity_type' ? 
+    // Let's check keys. Usually it's appended one by one. 
+    // Assuming your frontend sends 'activity_type' if you checked it in previous steps.
+    // Wait, looking at InspectionForm.tsx viewed previously:
+    // It appends: form.append('branch', ...), form.append('activity_type', ...)
+    const activity_type = formData.get('activity_type') as string;
+
+    // Sub Items: These are trickier if not JSON. 
+    // If frontend sends `subItems` as JSON string, we parse it.
+    // If frontend sends flat keys (e.g. subItems[customer_1]), accessing might be hard.
+    // Let's assume for now it sends a JSON string for `sub_items` OR we just don't strictly require it if it's missing.
+    // Looking at typical FormData usage, complex objects are often stringified.
+    let sub_items = {};
+    const subItemsRaw = formData.get('subItems');
+    if (subItemsRaw && typeof subItemsRaw === 'string') {
+      try {
+        sub_items = JSON.parse(subItemsRaw);
+      } catch (e) {
+        console.log("Failed to parse subItems JSON", e);
+      }
     }
 
-    const data = JSON.parse(dataStr);
-    const files = formData.getAll('images') as File[];
+    const files = formData.getAll('photos') as File[]; // Frontend uses 'photos'
 
-    console.log("Received Data:", data); // Debug Log
-    console.log("Received Files:", files.length); // Debug Log
+    if (!branch || !contract_no) {
+      return NextResponse.json({ error: 'Missing required fields (branch, contract_no)' }, { status: 400 });
+    }
+
+    console.log(`Processing: ${branch} / ${contract_no} / Photos: ${files.length}`);
 
     // --- 1. Folder Path Generation (UUID for Safety) ---
-    // Use Random UUID for folder to prevent "Invalid key" errors with Korean/Special Chars
     const dateFolder = new Date().toISOString().slice(0, 10);
-    // Simple random string logic for "UUID-like" behavior without external lib
     const folderUuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const folderPath = `${dateFolder}/${folderUuid}`;
-
-    console.log("Storage Path:", folderPath);
 
     // --- 2. Database Insert (With Encryption) ---
     const inspectionData = {
       created_at: new Date().toISOString(),
-      branch: data.branch,
-      name: data.name,
-      contract_no: data.contract_no,
-      business_name: encrypt(data.business_name), // Encrypt here!
-      activity_type: data.activity_type,
+      branch,
+      name,
+      contract_no,
+      business_name: encrypt(business_name), // Encrypt here!
+      activity_type,
       photo_count: files.length,
-      folder_path: folderPath, // Store the UUID path
-      sub_items: data.sub_items || {}
+      folder_path: folderPath,
+      sub_items: sub_items
     };
 
     const { data: insertData, error: insertError } = await adminSupabase
@@ -52,29 +77,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: insertError.message }, { status: 500 });
     }
 
-    console.log("DB Insert Success:", insertData);
-
-    // --- 3. Image Upload (Server-Side) ---
-    // Note: Images are already compressed client-side, but we can do a safety pass or format const conversion server-side if needed.
-    // For speed, since client sends webp/blob, we just upload them.
-
+    // --- 3. Image Upload ---
     const uploadPromises = files.map(async (file, index) => {
       const arrayBuffer = await file.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
 
-      // Ensure WebP format (Double safety, or simple pass-through)
-      // If the client sends 'blob' named 'image.png', we might want to normalize extension.
-      // Client code sends `photos` which are Blobs.
-
-      // Let's use Sharp to standardize to highly compressed WebP 
-      // incase Client compression was bypassed or insufficient.
+      // Re-compress/Standardize to WebP using Sharp
       const compressedBuffer = await sharp(buffer)
-        .rotate() // Auto-rotate phone photos
+        .rotate()
         .resize(1280, 1280, { fit: 'inside', withoutEnlargement: true })
         .webp({ quality: 70 })
         .toBuffer();
 
-      const fileName = `${index + 1}.webp`; // 1.webp, 2.webp...
+      const fileName = `${index + 1}.webp`;
       const fullPath = `${folderPath}/${fileName}`;
 
       const { error: uploadError } = await adminSupabase.storage
@@ -84,10 +99,7 @@ export async function POST(req: Request) {
           upsert: true
         });
 
-      if (uploadError) {
-        console.error(`Upload Error (${fileName}):`, uploadError);
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
     });
 
     await Promise.all(uploadPromises);

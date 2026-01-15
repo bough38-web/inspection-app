@@ -45,11 +45,19 @@ export function AdminDashboard() {
     };
 
     useEffect(() => {
-        // setMounted(true); // Removed as per instruction's state change
         fetch('/api/inspections')
             .then(res => res.json())
-            .then(data => setInspections(data))
-            .catch(err => console.error('Failed to load data', err));
+            .then(data => {
+                // Ensure data is an array before setting
+                if (Array.isArray(data)) {
+                    setInspections(data);
+                } else {
+                    console.error('Invalid data format:', data);
+                    setInspections([]);
+                }
+            })
+            .catch(err => console.error('Failed to load data', err))
+            .finally(() => setLoading(false));
     }, []);
 
     const downloadZip = async (id: string, name: string) => {

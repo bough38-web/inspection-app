@@ -4,6 +4,10 @@ import { compressImage } from '@/lib/imageCompress';
 import { validateForm } from '@/lib/validators';
 
 export async function POST(req: Request) {
+  console.log('[Debug] Supabase Config Check:');
+  console.log('- URL:', process.env.NEXT_PUBLIC_SUPABASE_URL); // Is this the NEW url?
+  console.log('- Service Key Loaded:', !!process.env.SUPABASE_SERVICE_ROLE_KEY); // Is this true?
+
   const form = await req.formData();
   const photos = form.getAll('photos') as File[];
 

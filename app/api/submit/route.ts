@@ -17,10 +17,11 @@ export async function POST(req: Request) {
 
   const today = new Date();
   const dateFolder = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  // Sanitize folder names to prevent "Invalid key" errors (replace spaces with underscores)
-  const safeBusinessName = data.business_name.replace(/\s+/g, '_');
+  // Sanitize folder names to prevent "Invalid key" errors (replace spaces with underscores, and encode for S3)
+  const safeBusinessName = encodeURIComponent(data.business_name.replace(/\s+/g, '_'));
   const safeContractNo = data.contract_no.replace(/\s+/g, '');
-  const relativePath = `${dateFolder}/${data.branch}/${safeContractNo}_${safeBusinessName}`;
+  const safeBranch = encodeURIComponent(data.branch);
+  const relativePath = `${dateFolder}/${safeBranch}/${safeContractNo}_${safeBusinessName}`;
 
   try {
     validateForm(data);

@@ -1,65 +1,71 @@
-import JSZip from 'jszip';
 import { NextResponse } from 'next/server';
 import { adminSupabase } from '@/lib/supabase';
+import JSZip from 'jszip';
+import { decrypt } from '@/lib/encryption';
 
 export async function GET(req: Request) {
-  const url = new URL(req.url);
-  const id = url.searchParams.get('id');
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+
+  if (!id) return new NextResponse('ID missing', { status: 400 });
 
   try {
-    console.log('Download Request ID:', id);
-
-    // 1. Find Record from Supabase
+    // Fetch Metadata
     const { data: record, error } = await adminSupabase
       .from('inspections')
       .select('*')
       .eq('id', id)
       .single();
 
-    if (error || !record) {
-      console.log('Record not found for ID:', id, error);
-      return new NextResponse('Not Found', { status: 404 });
+    if (error || !record) return new NextResponse('Record not found', { status: 404 });
+
+    const businessName = decrypt(record.business_name); // Decrypt!
+    const folderPath = record.folder_path;
+
+    if (!folderPath) return new NextResponse('No photos found', { status: 404 });
+
+    // List files in Storage
+    const { data: files, error: listError } = await adminSupabase.storage
+      .from('inspections')
+      .list(folderPath);
+
+    if (listError || !files || files.length === 0) {
+      return new NextResponse('No files in storage', { status: 404 });
     }
 
-    console.log('Record found:', record.folder_path);
-
-    // 2. Create ZIP
     const zip = new JSZip();
 
-    // Try to download photos 1 to 10 (assuming max 10 photos or use photo_count)
-    // In a real robust app, we'd list files in the bucket folder
-    // For now, let's assume standard naming 1.webp, 2.webp etc.
-    const count = record.photo_count || 5;
+    // Use a safe folder name for the ZIP content
+    // Sanitize businessName just in case it has weird chars even after decryption
+    const safeName = businessName.replace(/[\\/:*?"<>|]/g, '_');
+    const zipFolder = zip.folder(`${record.contract_no}_${safeName}`);
 
-    for (let i = 1; i <= count; i++) {
-      try {
-        const { data } = await adminSupabase.storage
-          .from('inspections')
-          .download(`${record.folder_path}/${i}.webp`);
+    // Download each file
+    const downloads = files.map(async (file) => {
+      const { data: blob, error: dlError } = await adminSupabase.storage
+        .from('inspections')
+        .download(`${folderPath}/${file.name}`);
 
-        if (data) {
-          const buffer = await data.arrayBuffer();
-          zip.file(`${record.folder_path}/${i}.webp`, Buffer.from(buffer));
-          console.log('Added file:', i);
-        }
-      } catch (e) {
-        console.log('File not found or error:', i);
+      if (!dlError && blob && zipFolder) {
+        const arrayBuffer = await blob.arrayBuffer();
+        zipFolder.file(file.name, arrayBuffer);
       }
-    }
+    });
 
-    console.log('Generating Zip...');
-    const content = await zip.generateAsync({ type: 'nodebuffer' });
-    console.log('Zip size:', content.length);
+    await Promise.all(downloads);
 
-    return new NextResponse(content as any, {
+    const zipContent = await zip.generateAsync({ type: 'blob' });
+    const buffer = await zipContent.arrayBuffer(); // Convert Blob to ArrayBuffer for Response
+
+    return new NextResponse(buffer, {
       headers: {
         'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename=${encodeURIComponent(record.contract_no)}_${encodeURIComponent(record.business_name)}.zip`
+        'Content-Disposition': `attachment; filename="${encodeURIComponent(safeName)}_photos.zip"`
       }
     });
 
   } catch (e) {
-    console.error('ZIP ERROR:', e);
-    return NextResponse.json({ error: String(e), stack: (e as Error).stack }, { status: 500 });
+    console.error('ZIP Error:', e);
+    return new NextResponse('Internal Server Error', { status: 500 });
   }
 }

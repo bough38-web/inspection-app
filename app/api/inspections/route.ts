@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { adminSupabase } from '@/lib/supabase';
+import { decrypt } from '@/lib/encryption';
 
-export const dynamic = 'force-dynamic'; // Ensure no caching for this route
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
@@ -10,11 +11,20 @@ export async function GET() {
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (error) {
+            console.error('Fetch error:', error);
+            return NextResponse.json({ error: error.message }, { status: 500 });
+        }
 
-        return NextResponse.json(data || []);
-    } catch (error) {
-        console.error('Fetch error:', error);
-        return NextResponse.json([]);
+        // Decrypt business_name for display
+        const decryptedData = data?.map(item => ({
+            ...item,
+            business_name: decrypt(item.business_name)
+        }));
+
+        return NextResponse.json(decryptedData || []);
+
+    } catch (e) {
+        return NextResponse.json([], { status: 500 });
     }
 }

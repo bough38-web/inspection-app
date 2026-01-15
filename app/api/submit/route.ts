@@ -1,75 +1,101 @@
 import { NextResponse } from 'next/server';
-import { adminSupabase } from '@/lib/supabase';
-import { compressImage } from '@/lib/imageCompress';
-import { validateForm } from '@/lib/validators';
+import { adminSupabase } from '@/lib/supabase'; // Use Admin Client for Storage & DB
+import sharp from 'sharp';
+import { encrypt } from '@/lib/encryption';
 
 export async function POST(req: Request) {
-  console.log('[Debug] Supabase Config Check:');
-  console.log('- URL:', process.env.NEXT_PUBLIC_SUPABASE_URL); // Is this the NEW url?
-  console.log('- Service Key Loaded:', !!process.env.SUPABASE_SERVICE_ROLE_KEY); // Is this true?
-
-  const form = await req.formData();
-  const photos = form.getAll('photos') as File[];
-
-  const data = {
-    branch: form.get('branch') as string,
-    name: form.get('name') as string,
-    contract_no: form.get('contract_no') as string,
-    business_name: form.get('business_name') as string,
-    photos
-  };
-
-  const today = new Date();
-  const dateFolder = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-  // Sanitize folder names: Use Random String to guarantee S3 compatibility (Avoids Korean text & crypto dependencies)
-  const folderUUID = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  const relativePath = `${dateFolder}/${folderUUID}`;
-  // Store readable metadata in database, but keep storage path purely ASCII safe.
-
   try {
-    validateForm(data);
+    console.log("Submit API Called"); // Debug Log
 
-    // 1. Insert into Supabase Database
-    const { data: row, error: insertError } = await adminSupabase
+    const formData = await req.formData();
+    const dataStr = formData.get('data') as string;
+
+    if (!dataStr) {
+      return NextResponse.json({ error: 'Missing data' }, { status: 400 });
+    }
+
+    const data = JSON.parse(dataStr);
+    const files = formData.getAll('images') as File[];
+
+    console.log("Received Data:", data); // Debug Log
+    console.log("Received Files:", files.length); // Debug Log
+
+    // --- 1. Folder Path Generation (UUID for Safety) ---
+    // Use Random UUID for folder to prevent "Invalid key" errors with Korean/Special Chars
+    const dateFolder = new Date().toISOString().slice(0, 10);
+    // Simple random string logic for "UUID-like" behavior without external lib
+    const folderUuid = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const folderPath = `${dateFolder}/${folderUuid}`;
+
+    console.log("Storage Path:", folderPath);
+
+    // --- 2. Database Insert (With Encryption) ---
+    const inspectionData = {
+      created_at: new Date().toISOString(),
+      branch: data.branch,
+      name: data.name,
+      contract_no: data.contract_no,
+      business_name: encrypt(data.business_name), // Encrypt here!
+      activity_type: data.activity_type,
+      photo_count: files.length,
+      folder_path: folderPath, // Store the UUID path
+      sub_items: data.sub_items || {}
+    };
+
+    const { data: insertData, error: insertError } = await adminSupabase
       .from('inspections')
-      .insert({
-        branch: data.branch,
-        name: data.name,
-        contract_no: data.contract_no,
-        business_name: data.business_name,
-        // Make sure to create this column: alter table inspections add column activity_type text;
-        activity_type: form.get('activity_type'),
-        status: 'submitted',
-        folder_path: relativePath,
-        photo_count: photos.length
-      })
-      .select()
-      .single();
+      .insert([inspectionData])
+      .select();
 
-    if (insertError) throw insertError;
+    if (insertError) {
+      console.error("Supabase Insert Error:", insertError);
+      return NextResponse.json({ error: insertError.message }, { status: 500 });
+    }
 
-    // 2. Upload Photos to Supabase Storage
-    for (let i = 0; i < photos.length; i++) {
-      const buffer = Buffer.from(await photos[i].arrayBuffer());
-      const compressed = await compressImage(buffer);
+    console.log("DB Insert Success:", insertData);
+
+    // --- 3. Image Upload (Server-Side) ---
+    // Note: Images are already compressed client-side, but we can do a safety pass or format const conversion server-side if needed.
+    // For speed, since client sends webp/blob, we just upload them.
+
+    const uploadPromises = files.map(async (file, index) => {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Ensure WebP format (Double safety, or simple pass-through)
+      // If the client sends 'blob' named 'image.png', we might want to normalize extension.
+      // Client code sends `photos` which are Blobs.
+
+      // Let's use Sharp to standardize to highly compressed WebP 
+      // incase Client compression was bypassed or insufficient.
+      const compressedBuffer = await sharp(buffer)
+        .rotate() // Auto-rotate phone photos
+        .resize(1280, 1280, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 70 })
+        .toBuffer();
+
+      const fileName = `${index + 1}.webp`; // 1.webp, 2.webp...
+      const fullPath = `${folderPath}/${fileName}`;
 
       const { error: uploadError } = await adminSupabase.storage
         .from('inspections')
-        .upload(`${relativePath}/${i + 1}.webp`, compressed, {
+        .upload(fullPath, compressedBuffer, {
           contentType: 'image/webp',
           upsert: true
         });
 
       if (uploadError) {
+        console.error(`Upload Error (${fileName}):`, uploadError);
         throw uploadError;
       }
-    }
+    });
 
-    return NextResponse.json({ ok: true });
+    await Promise.all(uploadPromises);
 
-  } catch (error) {
-    console.error('Submission failed:', error);
-    // @ts-ignore
-    return NextResponse.json({ ok: false, error: error.message || 'Unknown error' }, { status: 500 });
+    return NextResponse.json({ success: true, id: insertData[0].id });
+
+  } catch (error: any) {
+    console.error("Server Error:", error);
+    return NextResponse.json({ error: error.message || 'Server Error' }, { status: 500 });
   }
 }

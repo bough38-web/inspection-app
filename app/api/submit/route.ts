@@ -64,7 +64,7 @@ export async function POST(req: Request) {
       activity_type,
       photo_count: files.length,
       folder_path: folderPath,
-      sub_items: sub_items
+      // sub_items: sub_items // Column missing in DB, commented out to fix error
     };
 
     const { data: insertData, error: insertError } = await adminSupabase

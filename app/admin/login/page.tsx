@@ -11,7 +11,10 @@ export default function LoginPage() {
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        if (id === 'admin' && password === 'admin1234') {
+        const adminId = process.env.NEXT_PUBLIC_ADMIN_ID || 'admin';
+        const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin1234!!';
+
+        if (id === adminId && password === adminPassword) {
             // Set simple auth flag
             // In a real app, use HttpOnly cookies via Server Action
             document.cookie = "is_admin=true; path=/; max-age=86400"; // 1 day

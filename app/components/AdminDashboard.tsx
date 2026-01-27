@@ -65,6 +65,44 @@ const convertWebPToPNG = async (blob: Blob): Promise<ArrayBuffer> => {
     });
 };
 
+// Helper to parse activity details string
+const parseActivityDetails = (activityType: string) => {
+    const result = {
+        customer_1: '', customer_2: '',
+        appearance_1: '', appearance_2: '',
+        system_1: '', system_2: '', system_3: ''
+    };
+    if (!activityType) return result;
+
+    if (activityType.includes('[고객소통]')) {
+        // Format: [고객소통] 안부:양호, 보안:조치완료
+        const map = activityType.replace('[고객소통] ', '').split(', ').reduce((acc, curr) => {
+            const [k, v] = curr.split(':');
+            acc[k] = v; return acc;
+        }, {} as any);
+        result.customer_1 = map['안부'] || '';
+        result.customer_2 = map['보안'] || '';
+    } else if (activityType.includes('[외관점검]')) {
+        // Format: [외관점검] 표지판:양호, 이물질:조치완료
+        const map = activityType.replace('[외관점검] ', '').split(', ').reduce((acc, curr) => {
+            const [k, v] = curr.split(':');
+            acc[k] = v; return acc;
+        }, {} as any);
+        result.appearance_1 = map['표지판'] || '';
+        result.appearance_2 = map['이물질'] || '';
+    } else if (activityType.includes('[시스템점검]')) {
+        // Format: [시스템점검] 카메라:양호, 리더기:양호, 락:양호
+        const map = activityType.replace('[시스템점검] ', '').split(', ').reduce((acc, curr) => {
+            const [k, v] = curr.split(':');
+            acc[k] = v; return acc;
+        }, {} as any);
+        result.system_1 = map['카메라'] || '';
+        result.system_2 = map['리더기'] || '';
+        result.system_3 = map['락'] || '';
+    }
+    return result;
+};
+
 export function AdminDashboard() {
     const [inspections, setInspections] = useState<Inspection[]>([]);
     const [loading, setLoading] = useState(true);
@@ -162,9 +200,13 @@ export function AdminDashboard() {
                 { header: '담당자', key: 'name', width: 10 },
                 { header: '계약번호', key: 'contract_no', width: 15 },
                 { header: '상호명', key: 'business_name', width: 20 },
-                { header: '활동내역_고객소통', key: 'activity_customer', width: 15 },
-                { header: '활동내역_시스템점검', key: 'activity_system', width: 15 },
-                { header: '활동내역_외관점검', key: 'activity_exterior', width: 15 },
+                { header: '고객_안부', key: 'customer_1', width: 12 },
+                { header: '고객_보안', key: 'customer_2', width: 12 },
+                { header: '외관_표지판', key: 'appearance_1', width: 12 },
+                { header: '외관_이물질', key: 'appearance_2', width: 12 },
+                { header: '시스템_카메라', key: 'system_1', width: 12 },
+                { header: '시스템_리더기', key: 'system_2', width: 12 },
+                { header: '시스템_락', key: 'system_3', width: 12 },
                 { header: '사진1', key: 'photo1', width: 20 },
                 { header: '사진2', key: 'photo2', width: 20 },
                 { header: '사진3', key: 'photo3', width: 20 },
@@ -177,6 +219,7 @@ export function AdminDashboard() {
                 const item = inspections[i];
                 const rowIndex = i + 2;
                 const row = sheet.getRow(rowIndex);
+                const details = parseActivityDetails(item.activity_type || '');
                 row.values = {
                     id: item.id,
                     date: new Date(item.created_at).toLocaleDateString(),
@@ -184,9 +227,7 @@ export function AdminDashboard() {
                     name: item.name,
                     contract_no: item.contract_no,
                     business_name: item.business_name,
-                    activity_customer: (item.activity_type || '').includes('고객소통') ? 'O' : '',
-                    activity_system: (item.activity_type || '').includes('시스템점검') ? 'O' : '',
-                    activity_exterior: (item.activity_type || '').includes('외관점검') ? 'O' : '',
+                    ...details
                 };
                 row.height = 100;
                 row.alignment = { vertical: 'middle' };
@@ -200,10 +241,9 @@ export function AdminDashboard() {
                                 const webpBlob = await res.blob();
                                 const pngBuffer = await convertWebPToPNG(webpBlob);
                                 const imageId = workbook.addImage({ buffer: pngBuffer, extension: 'png' });
-                                // Adjust column index for photos (now starting at index 9: 0-8 used by data)
-                                // Columns: id(0), date(1), branch(2), name(3), contract(4), business(5), customer(6), system(7), exterior(8)
-                                // Photos start at column 9 (header: photo1)
-                                const colIndex = 9 + (p - 1);
+                                // Columns: id(0)..business(5) + 7 details = 13 columns.
+                                // Photos start at column 13 (0-indexed -> 13 is 14th column)
+                                const colIndex = 13 + (p - 1);
                                 sheet.addImage(imageId, {
                                     tl: { col: colIndex, row: rowIndex - 1 },
                                     br: { col: colIndex + 1, row: rowIndex },

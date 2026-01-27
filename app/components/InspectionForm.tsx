@@ -50,24 +50,33 @@ export function InspectionForm() {
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files) {
-            const newFiles = Array.from(e.target.files);
+        if (e.target.files && e.target.files.length > 0) {
+            const file = e.target.files[0]; // Take only the first file
+
             // Limit to 3 photos total
-            const totalFiles = photos.length + newFiles.length;
+            const totalFiles = photos.length + 1;
             if (totalFiles > 3) {
                 alert('최대 3장까지만 업로드 가능합니다.');
                 return;
             }
 
-            // Compress images before adding to state
-            const compressedFiles = await Promise.all(
-                newFiles.map(file => compressImageClient(file))
-            );
+            // Compress image
+            const compressedFile = await compressImageClient(file);
+            const newUrl = URL.createObjectURL(file);
 
-            setPhotos((prev) => [...prev, ...compressedFiles]);
+            setPhotos((prev) => [...prev, compressedFile]);
+            setImageUrls(prev => [...prev, newUrl]);
 
-            const newUrls = newFiles.map(file => URL.createObjectURL(file));
-            setImageUrls(prev => [...prev, ...newUrls]);
+            // Auto-trigger next capture if less than 3
+            if (totalFiles < 3) {
+                // Short delay to allow UI update and prevent browser blocking
+                setTimeout(() => {
+                    if (fileInputRef.current) {
+                        fileInputRef.current.value = ''; // Reset input
+                        fileInputRef.current.click();
+                    }
+                }, 500);
+            }
         }
     };
 
@@ -189,7 +198,11 @@ export function InspectionForm() {
     }
 
     return (
-        <form onSubmit={submit} className="w-full max-w-md mx-auto space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100">
+        <form
+            onSubmit={submit}
+            className="w-full max-w-md mx-auto space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100"
+            onPaste={(e) => e.preventDefault()} // Block paste
+        >
             <div className="space-y-4">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-800">현장 점검 등록 <span className="text-sm text-blue-500 font-normal">(v2.0 New)</span></h2>
@@ -259,16 +272,6 @@ export function InspectionForm() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setForm({ ...form, activeCategory: 'appearance' })}
-                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'appearance'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            외관점검
-                        </button>
-                        <button
-                            type="button"
                             onClick={() => setForm({ ...form, activeCategory: 'system' })}
                             className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'system'
                                 ? 'bg-blue-600 text-white shadow-md'
@@ -276,6 +279,16 @@ export function InspectionForm() {
                                 }`}
                         >
                             시스템점검
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setForm({ ...form, activeCategory: 'appearance' })}
+                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'appearance'
+                                ? 'bg-blue-600 text-white shadow-md'
+                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                }`}
+                        >
+                            외관점검
                         </button>
                     </div>
 
@@ -393,43 +406,43 @@ export function InspectionForm() {
                     )}
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-gray-700">현장 사진 (최대 3장)</label>
-                    <div className="grid grid-cols-3 gap-2">
-                        {imageUrls.map((url, idx) => (
-                            <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200">
-                                <img src={url} alt="preview" className="w-full h-full object-cover" />
+                {form.activeCategory === 'appearance' && (
+                    <div className="space-y-2 animate-fadeIn">
+                        <label className="text-sm font-medium text-gray-700">현장 사진 (최대 3장)</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {imageUrls.map((url, idx) => (
+                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200">
+                                    <img src={url} alt="preview" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeImage(idx)}
+                                        className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
+                            ))}
+                            {imageUrls.length < 3 && (
                                 <button
                                     type="button"
-                                    onClick={() => removeImage(idx)}
-                                    className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
                                 >
-                                    삭제
+                                    +
                                 </button>
-                            </div>
-                        ))}
-                        {imageUrls.length < 3 && (
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
-                            >
-                                +
-                            </button>
-                        )}
+                            )}
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            capture="environment" // Prefer rear camera
+                            onChange={handleImageUpload}
+                        />
+                        <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
                     </div>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        className="hidden"
-                        accept="image/*"
-                        // multiple Removed to make it easier to control count, or keep it but slice?
-                        // Let's keep multiple but check count in handler
-                        multiple
-                        onChange={handleImageUpload}
-                    />
-                    <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
-                </div>
+                )}
             </div>
 
             <Button type="submit" loading={loading} className="w-full h-12 text-lg">

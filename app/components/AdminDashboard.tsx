@@ -162,7 +162,9 @@ export function AdminDashboard() {
                 { header: '담당자', key: 'name', width: 10 },
                 { header: '계약번호', key: 'contract_no', width: 15 },
                 { header: '상호명', key: 'business_name', width: 20 },
-                { header: '활동내역', key: 'activity_type', width: 40 },
+                { header: '활동내역_고객소통', key: 'activity_customer', width: 15 },
+                { header: '활동내역_시스템점검', key: 'activity_system', width: 15 },
+                { header: '활동내역_외관점검', key: 'activity_exterior', width: 15 },
                 { header: '사진1', key: 'photo1', width: 20 },
                 { header: '사진2', key: 'photo2', width: 20 },
                 { header: '사진3', key: 'photo3', width: 20 },
@@ -182,7 +184,9 @@ export function AdminDashboard() {
                     name: item.name,
                     contract_no: item.contract_no,
                     business_name: item.business_name,
-                    activity_type: item.activity_type || '-',
+                    activity_customer: (item.activity_type || '').includes('고객소통') ? 'O' : '',
+                    activity_system: (item.activity_type || '').includes('시스템점검') ? 'O' : '',
+                    activity_exterior: (item.activity_type || '').includes('외관점검') ? 'O' : '',
                 };
                 row.height = 100;
                 row.alignment = { vertical: 'middle' };
@@ -196,7 +200,10 @@ export function AdminDashboard() {
                                 const webpBlob = await res.blob();
                                 const pngBuffer = await convertWebPToPNG(webpBlob);
                                 const imageId = workbook.addImage({ buffer: pngBuffer, extension: 'png' });
-                                const colIndex = 7 + (p - 1);
+                                // Adjust column index for photos (now starting at index 9: 0-8 used by data)
+                                // Columns: id(0), date(1), branch(2), name(3), contract(4), business(5), customer(6), system(7), exterior(8)
+                                // Photos start at column 9 (header: photo1)
+                                const colIndex = 9 + (p - 1);
                                 sheet.addImage(imageId, {
                                     tl: { col: colIndex, row: rowIndex - 1 },
                                     br: { col: colIndex + 1, row: rowIndex },
@@ -252,8 +259,8 @@ export function AdminDashboard() {
                         onClick={downloadExcel}
                         disabled={generatingExcel}
                         className={`px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${generatingExcel
-                                ? 'bg-gray-800 cursor-not-allowed text-gray-400'
-                                : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/30'
+                            ? 'bg-gray-800 cursor-not-allowed text-gray-400'
+                            : 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:shadow-emerald-500/30'
                             }`}
                     >
                         {generatingExcel ? (

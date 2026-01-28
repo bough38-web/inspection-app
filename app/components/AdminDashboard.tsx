@@ -357,6 +357,10 @@ export function AdminDashboard() {
     const sortedManagers = Object.entries(managerStats).sort((a, b) => b[1] - a[1]);
     const maxManagerCount = Math.max(...Object.values(managerStats), 1);
 
+    if (!userRole) {
+        return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+    }
+
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 animate-fade-in">
             {/* Toast Notification */}

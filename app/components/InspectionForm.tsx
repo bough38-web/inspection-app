@@ -28,11 +28,11 @@ export function InspectionForm() {
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const branches = ['중앙', '강북', '서대문', '고양', '의정부', '남양주', '강릉', '원주'];
+    const branches = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사'];
 
     const fillMockData = () => {
         setForm({
-            branch: '중앙',
+            branch: '중앙지사',
             name: '김철수',
             contract_no: '12345678',
             business_name: '테스트 상점',

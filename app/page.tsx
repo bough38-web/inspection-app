@@ -11,6 +11,16 @@ export default function Home() {
           <p className="mt-2 text-sm text-gray-600">
             현장 점검 내용을 빠르고 정확하게 등록하세요.
           </p>
+          <div className="mt-4">
+            <a
+              href="/operation_manual.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center px-4 py-2 border border-blue-200 text-sm font-medium rounded-full text-blue-600 bg-blue-50 hover:bg-blue-100 transition-colors shadow-sm"
+            >
+              📖 이용 가이드 보러가기
+            </a>
+          </div>
         </div>
         <InspectionForm />
       </div>

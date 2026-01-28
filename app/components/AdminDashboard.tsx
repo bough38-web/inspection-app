@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from './ui/Button';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -141,12 +141,45 @@ export function AdminDashboard() {
     const [userRole, setUserRole] = useState('manager');
     const [userBranch, setUserBranch] = useState('');
 
+    const isInitialized = useRef(false);
+
     useEffect(() => {
-        const role = localStorage.getItem('user_role') || 'manager';
+        if (isInitialized.current) return;
+        isInitialized.current = true;
+
+        const role = localStorage.getItem('user_role');
         const branch = localStorage.getItem('branch_name') || '';
+
+        if (!role) {
+            window.location.href = '/admin/login';
+            return;
+        }
+
         setUserRole(role);
         setUserBranch(branch);
+
+        // Clear storage to force logout on refresh
+        // We set a flag in sessionStorage to allow current session persistence if needed? 
+        // User asked "refresh -> logout", so simply clearing localStorage works.
+        // But if we clear it, then `fetchInspections` or other things interacting with it might fail?
+        // Actually fetchInspections doesn't use localStorage.
+        // But if user clicks refresh, this effect runs again, role is null => redirect. Perfect.
+        localStorage.removeItem('user_role');
+        localStorage.removeItem('branch_name');
+        localStorage.removeItem('is_admin');
+
+        // Remove cookie too just in case
+        document.cookie = "is_admin=; path=/; max-age=0";
+        document.cookie = "branch_name=; path=/; max-age=0";
     }, []);
+
+    const handleLogout = () => {
+        localStorage.clear();
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        window.location.href = '/admin/login';
+    };
 
     useEffect(() => {
         if (userRole === 'branch' && userBranch) {
@@ -337,6 +370,13 @@ export function AdminDashboard() {
                 </div>
 
                 <div className="mt-4 md:mt-0 flex items-center gap-3">
+                    <Button
+                        variant="secondary"
+                        onClick={handleLogout}
+                        className="px-4 py-2.5 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors shadow-sm"
+                    >
+                        로그아웃
+                    </Button>
                     <Button
                         onClick={() => downloadExcel(false)}
                         disabled={generatingExcel}

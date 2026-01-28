@@ -114,7 +114,7 @@ export function InspectionForm() {
             }
         }
 
-        if (!isValid || !form.branch || !form.name || !form.contract_no || !form.business_name) {
+        if (!isValid || !form.branch || !form.name || !form.business_name) {
             alert('필수 항목을 모두 입력/선택해주세요.');
             return;
         }
@@ -241,13 +241,9 @@ export function InspectionForm() {
                     value={form.name}
                     onChange={e => setForm({ ...form, name: e.target.value })}
                 />
-                <Input
-                    label="계약번호 (8자리)"
-                    placeholder="12345678"
-                    value={form.contract_no}
-                    maxLength={8}
-                    onChange={e => setForm({ ...form, contract_no: e.target.value })}
-                />
+
+                {/* Contract Number removed as per request, but kept in state as empty for compatibility */}
+
                 <Input
                     label="상호명"
                     placeholder="(주)우리회사"

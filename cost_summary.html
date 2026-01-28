@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>개발 비용 및 난이도 분석 요약</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 text-slate-800 p-8 min-h-screen">
+
+    <div class="max-w-4xl mx-auto space-y-8">
+
+        <!-- Header -->
+        <header class="text-center space-y-2 mb-12">
+            <h1 class="text-3xl font-bold text-slate-900">시스템 개발 비용 및 난이도 분석</h1>
+            <p class="text-slate-500">Field Inspection System Development Cost Analysis</p>
+            <div class="inline-block bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-medium mt-2">
+                최종 분석 일자: 2026. 01. 16
+            </div>
+        </header>
+
+        <!-- 1. Executive Summary -->
+        <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-file-signature text-blue-600"></i>
+                종합 요약
+            </h2>
+            <p class="text-slate-600 leading-relaxed">
+                본 시스템은 단순한 데이터 수집 도구를 넘어 <b>개인정보 암호화(AES-256)</b>, <b>클라이언트 이미지 최적화</b>,
+                <b>자동화된 엑셀 리포팅</b> 기술이 적용된 비즈니스 애플리케이션입니다.
+                보안성과 현장 업무 효율성을 최우선으로 설계되었으며,
+                일반적인 웹사이트 구축 대비 <span class="text-blue-600 font-bold">약 2.5배 이상의 기술적 난이도</span>가 요구됩니다.
+            </p>
+        </section>
+
+        <!-- 2. Development Effort Comparison (핵심 요청 사항) -->
+        <section class="bg-white rounded-2xl p-8 shadow-sm border border-slate-200">
+            <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                <i class="fa-solid fa-scale-balanced text-purple-600"></i>
+                개발 노력도 및 관점 비교 (보수적 vs 일반적)
+            </h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 border-b">평가 항목</th>
+                            <th class="px-6 py-3 border-b bg-blue-50 text-blue-900 font-bold">보수적 관점 (전문 에이전시/SI)</th>
+                            <th class="px-6 py-3 border-b">일반적 관점 (프리랜서)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-slate-900">보안 구현 (암호화)</td>
+                            <td class="px-6 py-4 text-blue-800 bg-blue-50/30">
+                                <strong>상 (High)</strong><br>
+                                DB 저장 전 암호화 필수, 복호화 키 관리 및 감사 로그 구축 필요
+                            </td>
+                            <td class="px-6 py-4">
+                                <strong>중 (Medium)</strong><br>
+                                기본 HTTPS 적용 및 단순 해싱 처리
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-slate-900">이미지 처라</td>
+                            <td class="px-6 py-4 text-blue-800 bg-blue-50/30">
+                                <strong>최상 (Very High)</strong><br>
+                                클라이언트 측 리사이징/압축, 트래픽 비용 절감 로직 구현
+                            </td>
+                            <td class="px-6 py-4">
+                                <strong>하 (Low)</strong><br>
+                                원본 업로드 (서버 부하/비용 고려 안 함)
+                            </td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-slate-900">엑셀/리포팅</td>
+                            <td class="px-6 py-4 text-blue-800 bg-blue-50/30">
+                                <strong>상 (High)</strong><br>
+                                현장 사진 셀 삽입 자동화, 보고서 양식 100% 매칭
+                            </td>
+                            <td class="px-6 py-4">
+                                <strong>중하 (Low-Mid)</strong><br>
+                                단순 텍스트 데이터 CSV 다운로드 제공
+                            </td>
+                        </tr>
+                        <tr class="bg-white hover:bg-gray-50">
+                            <td class="px-6 py-4 font-bold text-slate-900">유지보수성</td>
+                            <td class="px-6 py-4 text-blue-800 bg-blue-50/30">
+                                <strong>TypeScript & Next.js</strong><br>
+                                타입 안정성 확보로 장기 운영 시 오류 최소화
+                            </td>
+                            <td class="px-6 py-4">
+                                <strong>JS & Legacy</strong><br>
+                                빠른 개발 위주, 추후 확장 시 재개발 필요 가능성 높음
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-gray-500 mt-3 text-right">
+                * 보수적 관점은 엔터프라이즈급 납품 기준의 안정성과 품질을 최우선으로 한 평가입니다.
+            </p>
+        </section>
+
+        <!-- 3. Cost Estimate Table -->
+        <section class="grid md:grid-cols-2 gap-6">
+            <!-- 프리랜서 견적 -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 opacity-75">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-slate-700">A. 일반 프리랜서</h3>
+                    <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded text-sm">입문/중급</span>
+                </div>
+                <div class="text-3xl font-bold text-slate-900 mb-2">500 ~ 800 <span
+                        class="text-base font-medium text-slate-500">만원</span></div>
+                <ul class="text-sm text-slate-600 space-y-2 mb-6">
+                    <li>- 기능 구현 위주의 개발</li>
+                    <li>- 기본 디자인 템플릿 사용</li>
+                    <li>- 보안 및 최적화 기능 생략 가능성</li>
+                </ul>
+            </div>
+
+            <!-- 전문 에이전시 견적 -->
+            <div
+                class="bg-slate-900 p-6 rounded-2xl shadow-lg border border-slate-800 text-white relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-blue-600 text-xs font-bold px-3 py-1 rounded-bl-lg">추천 (Current
+                    Level)</div>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">B. 전문 에이전시 (SI)</h3>
+                    <span class="bg-slate-700 text-blue-200 px-3 py-1 rounded text-sm">고급/특급</span>
+                </div>
+                <div class="text-3xl font-bold mb-2">1,500 ~ 2,500 <span
+                        class="text-base font-medium text-slate-400">만원</span></div>
+                <ul class="text-sm text-slate-300 space-y-2">
+                    <li>- <span class="text-yellow-400">보안 감사 통과 수준</span>의 암호화 모듈</li>
+                    <li>- 사용자(UX) 중심의 반응형 디자인</li>
+                    <li>- 엑셀 자동화 및 이미지 압축 기술 포함</li>
+                    <li>- 1년 무상 하자보수 포함</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-400 text-sm mt-8">
+            <p>Generated by Project Analysis Bot</p>
+        </footer>
+
+    </div>
+
+</body>
+
+</html>

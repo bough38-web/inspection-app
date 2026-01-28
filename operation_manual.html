@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 운영 매뉴얼 - 현장 점검 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Pretendard', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        .header-gradient {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+
+        .section-title {
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background-color: #2563eb;
+            border-radius: 2px;
+        }
+
+        .step-number {
+            width: 2rem;
+            height: 2rem;
+            background-color: #eff6ff;
+            color: #2563eb;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 0.75rem;
+            border: 2px solid #bfdbfe;
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <!-- Header -->
+    <header class="header-gradient text-white py-12 px-6 shadow-lg">
+        <div class="max-w-5xl mx-auto">
+            <h1 class="text-3xl md:text-5xl font-extrabold mb-4">📖 시스템 운영 매뉴얼</h1>
+            <p class="text-blue-100 text-lg">현장 점검 모바일 시스템 사용자 & 관리자 가이드</p>
+            <div class="mt-8 flex gap-4">
+                <a href="#user-guide"
+                    class="px-6 py-3 bg-white text-blue-700 rounded-xl font-bold hover:bg-blue-50 transition shadow-md">
+                    <i class="fa-solid fa-user-hard-hat mr-2"></i> 현장 요원용 (User)
+                </a>
+                <a href="#admin-guide"
+                    class="px-6 py-3 bg-blue-800 text-white rounded-xl font-bold hover:bg-blue-900 transition shadow-md border border-blue-500">
+                    <i class="fa-solid fa-user-tie mr-2"></i> 관리자용 (Admin)
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-6 py-12 space-y-20">
+
+        <!-- USER GUIDE -->
+        <section id="user-guide" class="scroll-mt-20">
+            <div class="flex items-center gap-4 mb-8 pb-4 border-b border-gray-200">
+                <div class="bg-blue-100 p-4 rounded-2xl text-blue-600 text-2xl">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">현장 요원 매뉴얼</h2>
+                    <p class="text-gray-500">모바일로 점검 결과를 등록하는 방법</p>
+                </div>
+            </div>
+
+            <div class="grid gap-8 md:grid-cols-2">
+                <!-- Step 1 -->
+                <article class="glass p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number">1</span>
+                        <h3 class="text-xl font-bold">시스템 접속</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">전달받은 URL 주소로 접속합니다. 별도의 앱 설치가 필요 없습니다.</p>
+                    <div class="bg-gray-100 rounded-lg p-3 text-sm text-gray-500 font-mono">
+                        🌐 https://inspection-app...
+                    </div>
+                </article>
+
+                <!-- Step 2 -->
+                <article class="glass p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number">2</span>
+                        <h3 class="text-xl font-bold">기본 정보 입력</h3>
+                    </div>
+                    <p class="text-gray-600 mb-2">지사, 이름, 계약번호, 상호명을 입력합니다.</p>
+                    <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm">
+                        <i class="fa-solid fa-shield-halved text-blue-500 mr-1"></i>
+                        <span class="font-bold text-blue-800">보안 안내:</span> 입력하신 상호명은 서버 전송 즉시 <span
+                            class="underline">암호화</span>되어 안전하게 저장됩니다.
+                    </div>
+                </article>
+
+                <!-- Step 3 -->
+                <article class="glass p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number">3</span>
+                        <h3 class="text-xl font-bold">점검 내용 체크</h3>
+                    </div>
+                    <p class="text-gray-600">활동 유형(고객안내, 외관점검 등)을 선택하고 세부 항목의 상태를 체크합니다.</p>
+                    <ul class="list-disc list-inside text-sm text-gray-500 mt-2 space-y-1">
+                        <li><b>양호</b>: 문제 없음</li>
+                        <li><b>조치완료</b>: 현장에서 즉시 조치함</li>
+                        <li><b>해당없음</b>: 점검 대상 아님</li>
+                    </ul>
+                </article>
+
+                <!-- Step 4 -->
+                <article class="glass p-6 rounded-2xl shadow-sm hover:shadow-md transition">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number">4</span>
+                        <h3 class="text-xl font-bold">사진 촬영 및 제출</h3>
+                    </div>
+                    <p class="text-gray-600 mb-3">현장 사진을 촬영하여 첨부합니다. (최대 3장)</p>
+                    <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-sm text-yellow-800 mb-3">
+                        <i class="fa-solid fa-bolt mr-1"></i> 사진은 자동으로 압축되어 데이터 소모를 줄입니다.
+                    </div>
+                    <p class="text-gray-600">입력이 끝나면 <b>[제출하기]</b> 버튼을 누릅니다.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- ADMIN GUIDE -->
+        <section id="admin-guide" class="scroll-mt-20 pt-12 border-t border-gray-200">
+            <div class="flex items-center gap-4 mb-8 pb-4 border-b border-gray-200">
+                <div class="bg-slate-800 p-4 rounded-2xl text-white text-2xl">
+                    <i class="fa-solid fa-laptop-code"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-900">관리자 매뉴얼</h2>
+                    <p class="text-gray-500">데이터 조회, 엑셀 다운로드, 일괄 삭제 가이드</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Admin Step 1 -->
+                <div class="glass p-8 rounded-2xl shadow-lg border-l-4 border-slate-800">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number bg-slate-100 text-slate-800 border-slate-300">1</span>
+                        <h3 class="text-2xl font-bold text-slate-800">로그인 (Login)</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">관리자 페이지 주소(Example: /admin)로 접속하여 로그인합니다.</p>
+                    <div class="flex gap-4 flex-wrap">
+                        <div class="bg-gray-100 px-4 py-2 rounded text-sm font-mono">ID: admin</div>
+                        <div class="bg-gray-100 px-4 py-2 rounded text-sm font-mono">PW: *********</div>
+                    </div>
+                </div>
+
+                <!-- Admin Step 2 -->
+                <div class="glass p-8 rounded-2xl shadow-lg border-l-4 border-slate-800">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number bg-slate-100 text-slate-800 border-slate-300">2</span>
+                        <h3 class="text-2xl font-bold text-slate-800">대시보드 조회</h3>
+                    </div>
+                    <ul class="space-y-3 text-gray-700">
+                        <li class="flex items-center"><i class="fa-solid fa-chart-pie w-6 text-blue-500"></i> <b>통계
+                                확인:</b> 지사별 등록 건수 및 처리 현황 차트를 확인합니다.</li>
+                        <li class="flex items-center"><i class="fa-solid fa-list w-6 text-blue-500"></i> <b>실시간 리스트:</b>
+                            현장에서 등록된 데이터가 실시간으로 최상단에 표시됩니다.</li>
+                        <li class="flex items-center"><i class="fa-solid fa-lock-open w-6 text-blue-500"></i> <b>자동
+                                복호화:</b> 암호화된 상호명이 관리자에게는 자동으로 복호화되어 정상 표시됩니다.</li>
+                    </ul>
+                </div>
+
+                <!-- Admin Step 3 -->
+                <div class="glass p-8 rounded-2xl shadow-lg border-l-4 border-slate-800">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number bg-slate-100 text-slate-800 border-slate-300">3</span>
+                        <h3 class="text-2xl font-bold text-slate-800">일괄 삭제 (Batch Delete)</h3>
+                    </div>
+                    <p class="text-gray-600 mb-3">테스트 데이터나 잘못된 데이터를 한 번에 삭제할 수 있습니다.</p>
+                    <div class="flex flex-col md:flex-row gap-4 items-start">
+                        <div class="bg-red-50 p-4 rounded-lg border border-red-100 flex-1">
+                            <span class="font-bold text-red-700 block mb-2">삭제 방법</span>
+                            <ol class="list-decimal list-inside text-sm text-red-600 space-y-1">
+                                <li>리스트 좌측의 체크박스 선택 (또는 전체 선택)</li>
+                                <li>화면 우측 하단에 나타나는 <b>[선택 삭제]</b> 붉은색 버튼 클릭</li>
+                                <li>확인 팝업에서 승인 시 즉시 영구 삭제됨</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Step 4 -->
+                <div class="glass p-8 rounded-2xl shadow-lg border-l-4 border-green-600">
+                    <div class="flex items-center mb-4">
+                        <span class="step-number bg-green-100 text-green-700 border-green-300">4</span>
+                        <h3 class="text-2xl font-bold text-green-700">엑셀 다운로드 (Excel Export)</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">보고서 작성을 위해 데이터를 엑셀로 내려받습니다. <span
+                            class="text-green-600 font-bold">이미지가 엑셀 안에 포함됩니다.</span></p>
+                    <button
+                        class="bg-green-600 text-white px-6 py-2 rounded shadow-md font-bold mb-4 opacity-75 cursor-default">
+                        <i class="fa-solid fa-file-excel mr-2"></i> 엑셀 다운로드 (전체)
+                    </button>
+                    <p class="text-sm text-gray-500 bg-gray-50 p-3 rounded">
+                        * 버튼을 누르면 브라우저에서 자동 변환이 시작됩니다. 데이터 양에 따라 3~10초 정도 소요될 수 있습니다.<br>
+                        * 엑셀 파일 내부에 현장 사진이 자동으로 삽입되어 있어 별도로 사진을 붙여넣을 필요가 없습니다.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 py-12 px-6 text-center">
+        <p class="mb-2 font-bold text-white">Field Inspection System Manual</p>
+        <p class="text-sm">© 2026 Inspection System. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

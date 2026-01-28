@@ -136,12 +136,33 @@ export function AdminDashboard() {
         fetchInspections();
     }, []);
 
+    // Filter Inspections based on Login Context
+    const [filteredInspections, setFilteredInspections] = useState<Inspection[]>([]);
+    const [userRole, setUserRole] = useState('manager');
+    const [userBranch, setUserBranch] = useState('');
+
+    useEffect(() => {
+        const role = localStorage.getItem('user_role') || 'manager';
+        const branch = localStorage.getItem('branch_name') || '';
+        setUserRole(role);
+        setUserBranch(branch);
+    }, []);
+
+    useEffect(() => {
+        if (userRole === 'branch' && userBranch) {
+            setFilteredInspections(inspections.filter(i => i.branch === userBranch));
+        } else {
+            setFilteredInspections(inspections);
+        }
+    }, [inspections, userRole, userBranch]);
+
+
     // Selection Logic
     const toggleSelectAll = () => {
-        if (selectedIds.size === inspections.length) {
+        if (selectedIds.size === filteredInspections.length) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(inspections.map(i => i.id)));
+            setSelectedIds(new Set(filteredInspections.map(i => i.id)));
         }
     };
 
@@ -183,7 +204,7 @@ export function AdminDashboard() {
         }
     };
 
-    const downloadExcel = async () => {
+    const downloadExcel = async (onlySelected = false) => {
         if (generatingExcel) return;
         setGeneratingExcel(true);
         setProgress(0);
@@ -214,9 +235,19 @@ export function AdminDashboard() {
             sheet.getRow(1).font = { bold: true };
             sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
-            const total = inspections.length;
+            // Use filteredInspections or selected items for download
+            const targetItems = onlySelected
+                ? filteredInspections.filter(i => selectedIds.has(i.id))
+                : filteredInspections;
+
+            const total = targetItems.length;
+            if (total === 0) {
+                showToast('다운로드할 항목이 없습니다.', 'error');
+                return;
+            }
+
             for (let i = 0; i < total; i++) {
-                const item = inspections[i];
+                const item = targetItems[i];
                 const rowIndex = i + 2;
                 const row = sheet.getRow(rowIndex);
                 const details = parseActivityDetails(item.activity_type || '');
@@ -225,7 +256,7 @@ export function AdminDashboard() {
                     date: new Date(item.created_at).toLocaleDateString(),
                     branch: item.branch,
                     name: item.name,
-                    contract_no: item.contract_no,
+                    contract_no: item.contract_no, // Will be empty for new items
                     business_name: item.business_name,
                     ...details
                 };
@@ -241,8 +272,6 @@ export function AdminDashboard() {
                                 const webpBlob = await res.blob();
                                 const pngBuffer = await convertWebPToPNG(webpBlob);
                                 const imageId = workbook.addImage({ buffer: pngBuffer, extension: 'png' });
-                                // Columns: id(0)..business(5) + 7 details = 13 columns.
-                                // Photos start at column 13 (0-indexed -> 13 is 14th column)
                                 const colIndex = 13 + (p - 1);
                                 sheet.addImage(imageId, {
                                     tl: { col: colIndex, row: rowIndex - 1 },
@@ -256,7 +285,10 @@ export function AdminDashboard() {
                 setProgress(Math.round(((i + 1) / total) * 100));
             }
             const buf = await workbook.xlsx.writeBuffer();
-            saveAs(new Blob([buf]), `현장점검_내역_${new Date().toISOString().slice(0, 10)}.xlsx`);
+            const fileName = onlySelected
+                ? `현장점검_선택내역_${new Date().toISOString().slice(0, 10)}.xlsx`
+                : `현장점검_전체내역_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            saveAs(new Blob([buf]), fileName);
             showToast('엑셀 다운로드가 완료되었습니다.', 'success');
         } catch (error) {
             console.error(error);
@@ -272,13 +304,22 @@ export function AdminDashboard() {
         catch (e) { showToast('다운로드 요청 실패', 'error'); }
     };
 
-    // Calculate Stats
-    const branchStats = inspections.reduce((acc, curr) => {
+    // Calculate Stats based on FILTERED data
+    const branchStats = filteredInspections.reduce((acc, curr) => {
         acc[curr.branch] = (acc[curr.branch] || 0) + 1;
         return acc;
     }, {} as Record<string, number>);
     const sortedBranches = Object.entries(branchStats).sort((a, b) => b[1] - a[1]);
-    const maxCount = Math.max(...Object.values(branchStats), 1);
+    const maxBranchCount = Math.max(...Object.values(branchStats), 1);
+
+    // Manager Stats
+    const managerStats = filteredInspections.reduce((acc, curr) => {
+        const name = curr.name || '미지정';
+        acc[name] = (acc[name] || 0) + 1;
+        return acc;
+    }, {} as Record<string, number>);
+    const sortedManagers = Object.entries(managerStats).sort((a, b) => b[1] - a[1]);
+    const maxManagerCount = Math.max(...Object.values(managerStats), 1);
 
     return (
         <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 animate-fade-in">
@@ -290,13 +331,14 @@ export function AdminDashboard() {
                 <div className="flex flex-col">
                     <h1 className="text-3xl font-extrabold text-gray-800 tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
                         관리자 대시보드
+                        {userRole === 'branch' && <span className="ml-2 text-xl font-medium text-blue-600">({userBranch})</span>}
                     </h1>
                     <p className="text-sm text-gray-500 mt-2 font-medium">실시간 현장 점검 데이터 및 파일 관리</p>
                 </div>
 
                 <div className="mt-4 md:mt-0 flex items-center gap-3">
                     <Button
-                        onClick={downloadExcel}
+                        onClick={() => downloadExcel(false)}
                         disabled={generatingExcel}
                         className={`px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${generatingExcel
                             ? 'bg-gray-800 cursor-not-allowed text-gray-400'
@@ -315,31 +357,57 @@ export function AdminDashboard() {
 
             {/* Stats Row */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <StatCard title="총 등록 건수" count={inspections.length} color="text-blue-600" />
-                <StatCard title="오늘 등록" count={inspections.filter(i => new Date(i.created_at).toDateString() === new Date().toDateString()).length} color="text-indigo-600" />
-                <StatCard title="사진 파일" count={inspections.reduce((acc, curr) => acc + curr.photo_count, 0)} color="text-purple-600" />
+                <StatCard title="총 등록 건수" count={filteredInspections.length} color="text-blue-600" />
+                <StatCard title="오늘 등록" count={filteredInspections.filter(i => new Date(i.created_at).toDateString() === new Date().toDateString()).length} color="text-indigo-600" />
+                <StatCard title="사진 파일" count={filteredInspections.reduce((acc, curr) => acc + curr.photo_count, 0)} color="text-purple-600" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Branch Chart */}
-                <div className="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                    <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><span className="w-2 h-6 bg-blue-500 rounded-full"></span>지사별 현황</h2>
-                    <div className="space-y-5">
-                        {sortedBranches.length === 0 && <div className="text-gray-400 text-center py-10 bg-gray-50 rounded-2xl">데이터가 없습니다</div>}
-                        {sortedBranches.map(([branch, count]) => (
-                            <div key={branch} className="space-y-2 group cursor-pointer">
-                                <div className="flex justify-between text-sm font-medium">
-                                    <span className="text-gray-600 group-hover:text-blue-600 transition-colors">{branch}</span>
-                                    <span className="text-gray-900">{count}건</span>
-                                </div>
-                                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
-                                    <div
-                                        className="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out group-hover:bg-blue-600"
-                                        style={{ width: `${(count / maxCount) * 100}%` }}
-                                    />
-                                </div>
+                {/* Branch Chart (Only show if Manager or multiple branches exist) */}
+                <div className="lg:col-span-1 space-y-8">
+                    {userRole === 'manager' && (
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                            <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><span className="w-2 h-6 bg-blue-500 rounded-full"></span>지사별 현황</h2>
+                            <div className="space-y-5">
+                                {sortedBranches.length === 0 && <div className="text-gray-400 text-center py-10 bg-gray-50 rounded-2xl">데이터가 없습니다</div>}
+                                {sortedBranches.map(([branch, count]) => (
+                                    <div key={branch} className="space-y-2 group cursor-pointer">
+                                        <div className="flex justify-between text-sm font-medium">
+                                            <span className="text-gray-600 group-hover:text-blue-600 transition-colors">{branch}</span>
+                                            <span className="text-gray-900">{count}건</span>
+                                        </div>
+                                        <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out group-hover:bg-blue-600"
+                                                style={{ width: `${(count / maxBranchCount) * 100}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                    )}
+
+                    {/* Manager Stats (New) */}
+                    <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+                        <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><span className="w-2 h-6 bg-orange-500 rounded-full"></span>담당자별 성과</h2>
+                        <div className="space-y-5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            {sortedManagers.length === 0 && <div className="text-gray-400 text-center py-10 bg-gray-50 rounded-2xl">데이터가 없습니다</div>}
+                            {sortedManagers.map(([manager, count]) => (
+                                <div key={manager} className="space-y-2 group cursor-pointer">
+                                    <div className="flex justify-between text-sm font-medium">
+                                        <span className="text-gray-600 group-hover:text-orange-600 transition-colors">{manager}</span>
+                                        <span className="text-gray-900">{count}건</span>
+                                    </div>
+                                    <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-orange-500 rounded-full transition-all duration-700 ease-out group-hover:bg-orange-600"
+                                            style={{ width: `${(count / maxManagerCount) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
@@ -351,8 +419,16 @@ export function AdminDashboard() {
                         </h2>
                         {/* Floating Action for Selection */}
                         {selectedIds.size > 0 && (
-                            <div className="animate-fade-in flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-lg border border-red-100">
-                                <span className="text-sm font-bold text-red-600">{selectedIds.size}개 선택됨</span>
+                            <div className="animate-fade-in flex items-center gap-3 bg-white px-4 py-2 rounded-xl shadow-lg border border-indigo-100">
+                                <span className="text-sm font-bold text-indigo-600">{selectedIds.size}개 선택됨</span>
+                                <button
+                                    onClick={() => downloadExcel(true)}
+                                    disabled={generatingExcel}
+                                    className="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition-colors shadow-md flex items-center gap-1"
+                                >
+                                    {generatingExcel ? '다운로드 중...' : '선택 엑셀 저장'}
+                                </button>
+                                <div className="w-px h-4 bg-gray-300 mx-1"></div>
                                 <button
                                     onClick={handleDeleteSelected}
                                     disabled={isDeleting}
@@ -371,7 +447,7 @@ export function AdminDashboard() {
                                     <th className="px-6 py-4 w-12 text-center">
                                         <input
                                             type="checkbox"
-                                            checked={inspections.length > 0 && selectedIds.size === inspections.length}
+                                            checked={filteredInspections.length > 0 && selectedIds.size === filteredInspections.length}
                                             onChange={toggleSelectAll}
                                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition-colors cursor-pointer"
                                         />
@@ -396,10 +472,10 @@ export function AdminDashboard() {
                                             <td className="px-6 py-4"><div className="h-6 w-16 bg-gray-200 rounded ml-auto"></div></td>
                                         </tr>
                                     ))
-                                ) : inspections.length === 0 ? (
+                                ) : filteredInspections.length === 0 ? (
                                     <tr><td colSpan={6} className="text-center py-20 text-gray-400">데이터가 없습니다.</td></tr>
                                 ) : (
-                                    inspections.map((item) => (
+                                    filteredInspections.map((item) => (
                                         <tr
                                             key={item.id}
                                             className={`hover:bg-blue-50/30 transition-colors duration-200 group ${selectedIds.has(item.id) ? 'bg-blue-50/60' : ''}`}
@@ -423,7 +499,7 @@ export function AdminDashboard() {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-bold text-gray-800">{item.business_name}</span>
-                                                    <span className="text-xs text-gray-400">{item.name} | {item.contract_no}</span>
+                                                    <span className="text-xs text-gray-400">{item.name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">

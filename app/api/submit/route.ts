@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     // Parse individual fields (Frontend sends them directly, NOT as a 'data' JSON string)
     const branch = formData.get('branch') as string;
     const name = formData.get('name') as string;
-    const contract_no = formData.get('contract_no') as string;
+    const contract_no = (formData.get('contract_no') as string) || '';
     const business_name = formData.get('business_name') as string;
 
     // Special Handling for 'activity_type': Frontend might send it as string or logic might differ
@@ -43,8 +43,8 @@ export async function POST(req: Request) {
 
     const files = formData.getAll('photos') as File[]; // Frontend uses 'photos'
 
-    if (!branch || !contract_no) {
-      return NextResponse.json({ error: 'Missing required fields (branch, contract_no)' }, { status: 400 });
+    if (!branch) {
+      return NextResponse.json({ error: 'Missing required fields (branch)' }, { status: 400 });
     }
 
     console.log(`Processing: ${branch} / ${contract_no} / Photos: ${files.length}`);

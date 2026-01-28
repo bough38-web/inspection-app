@@ -88,36 +88,30 @@ export function InspectionForm() {
     async function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        let isValid = false;
-        let finalActivityType = '';
+        let finalParts: string[] = [];
 
-        if (!form.activeCategory) {
-            alert('활동 종류(고객소통/외관점검/시스템점검)를 선택해주세요.');
+        // Collect all valid categories
+        if (form.subItems.customer_1 && form.subItems.customer_2) {
+            finalParts.push(`[고객소통] 안부:${form.subItems.customer_1}, 보안:${form.subItems.customer_2}`);
+        }
+        if (form.subItems.appearance_1 && form.subItems.appearance_2) {
+            finalParts.push(`[외관점검] 표지판:${form.subItems.appearance_1}, 이물질:${form.subItems.appearance_2}`);
+        }
+        if (form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) {
+            finalParts.push(`[시스템점검] 카메라:${form.subItems.system_1}, 리더기:${form.subItems.system_2}, 락:${form.subItems.system_3}`);
+        }
+
+        if (finalParts.length === 0) {
+            alert('최소 하나 이상의 활동 내역을 완성해주세요.');
             return;
         }
 
-        // Validate based on active category
-        if (form.activeCategory === 'customer') {
-            if (form.subItems.customer_1 && form.subItems.customer_2) {
-                isValid = true;
-                finalActivityType = `[고객소통] 안부:${form.subItems.customer_1}, 보안:${form.subItems.customer_2}`;
-            }
-        } else if (form.activeCategory === 'appearance') {
-            if (form.subItems.appearance_1 && form.subItems.appearance_2) {
-                isValid = true;
-                finalActivityType = `[외관점검] 표지판:${form.subItems.appearance_1}, 이물질:${form.subItems.appearance_2}`;
-            }
-        } else if (form.activeCategory === 'system') {
-            if (form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) {
-                isValid = true;
-                finalActivityType = `[시스템점검] 카메라:${form.subItems.system_1}, 리더기:${form.subItems.system_2}, 락:${form.subItems.system_3}`;
-            }
-        }
-
-        if (!isValid || !form.branch || !form.name || !form.business_name) {
-            alert('필수 항목을 모두 입력/선택해주세요.');
+        if (!form.branch || !form.name || !form.business_name) {
+            alert('지사, 담당자, 상호명을 모두 입력해주세요.');
             return;
         }
+
+        const finalActivityType = finalParts.join(' ');
 
         setLoading(true);
         const fd = new FormData();
@@ -256,36 +250,30 @@ export function InspectionForm() {
 
                     {/* Category Buttons */}
                     <div className="flex space-x-2 mb-4">
-                        <button
-                            type="button"
-                            onClick={() => setForm({ ...form, activeCategory: 'customer' })}
-                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'customer'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            고객소통
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setForm({ ...form, activeCategory: 'system' })}
-                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'system'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            시스템점검
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setForm({ ...form, activeCategory: 'appearance' })}
-                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${form.activeCategory === 'appearance'
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                                }`}
-                        >
-                            외관점검
-                        </button>
+                        {[
+                            { id: 'customer', label: '고객소통', isComplete: !!(form.subItems.customer_1 && form.subItems.customer_2) },
+                            { id: 'system', label: '시스템점검', isComplete: !!(form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) },
+                            { id: 'appearance', label: '외관점검', isComplete: !!(form.subItems.appearance_1 && form.subItems.appearance_2) },
+                        ].map((cat) => (
+                            <button
+                                key={cat.id}
+                                type="button"
+                                onClick={() => setForm({ ...form, activeCategory: cat.id as any })}
+                                className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-2 ${form.activeCategory === cat.id
+                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-200'
+                                    }`}
+                            >
+                                <span className="flex items-center gap-1">
+                                    {cat.label}
+                                    {cat.isComplete && (
+                                        <svg className="w-3.5 h-3.5 text-green-500 fill-current" viewBox="0 0 20 20">
+                                            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                                        </svg>
+                                    )}
+                                </span>
+                            </button>
+                        ))}
                     </div>
 
                     {/* Dynamic Content based on Active Category */}

@@ -74,30 +74,41 @@ const parseActivityDetails = (activityType: string) => {
     };
     if (!activityType) return result;
 
-    // Remove the [CategoryTag] and any leading whitespace
-    const content = activityType.replace(/^\[.*?\]\s*/, '');
+    // Helper to parse a segment like "안부:양호, 보안:양호"
+    const parseSegment = (text: string) => {
+        const pairs = text.split(',').map(s => s.trim());
+        const map: Record<string, string> = {};
+        pairs.forEach(p => {
+            const [k, v] = p.split(':').map(s => s.trim());
+            if (k && v) map[k] = v;
+        });
+        return map;
+    };
 
-    // Split by comma and trim each part to handle inconsistent spacing
-    const pairs = content.split(',').map(s => s.trim());
+    // Extract segments for each category
+    const categories = [
+        { tag: '[고객소통]', keys: ['안부', '보안'], targets: ['customer_1', 'customer_2'] },
+        { tag: '[외관점검]', keys: ['표지판', '이물질'], targets: ['appearance_1', 'appearance_2'] },
+        { tag: '[시스템점검]', keys: ['카메라', '리더기', '락'], targets: ['system_1', 'system_2', 'system_3'] },
+    ];
 
-    // Build a map of key-value pairs
-    const map: Record<string, string> = {};
-    pairs.forEach(p => {
-        const [k, v] = p.split(':').map(s => s.trim());
-        if (k && v) map[k] = v;
+    categories.forEach(cat => {
+        if (activityType.includes(cat.tag)) {
+            // Find the start of this category's content
+            const startIdx = activityType.indexOf(cat.tag) + cat.tag.length;
+            // Find the end: either the next [ or the end of the string
+            let nextTagIdx = activityType.indexOf('[', startIdx);
+            const segmentText = nextTagIdx === -1
+                ? activityType.substring(startIdx)
+                : activityType.substring(startIdx, nextTagIdx);
+
+            const map = parseSegment(segmentText);
+            cat.keys.forEach((key, idx) => {
+                (result as any)[cat.targets[idx]] = map[key] || '';
+            });
+        }
     });
 
-    if (activityType.includes('[고객소통]')) {
-        result.customer_1 = map['안부'] || '';
-        result.customer_2 = map['보안'] || '';
-    } else if (activityType.includes('[외관점검]')) {
-        result.appearance_1 = map['표지판'] || '';
-        result.appearance_2 = map['이물질'] || '';
-    } else if (activityType.includes('[시스템점검]')) {
-        result.system_1 = map['카메라'] || '';
-        result.system_2 = map['리더기'] || '';
-        result.system_3 = map['락'] || '';
-    }
     return result;
 };
 

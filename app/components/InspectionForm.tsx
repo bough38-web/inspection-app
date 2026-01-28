@@ -90,15 +90,15 @@ export function InspectionForm() {
 
         let finalParts: string[] = [];
 
-        // Collect all valid categories
-        if (form.subItems.customer_1 && form.subItems.customer_2) {
-            finalParts.push(`[고객소통] 안부:${form.subItems.customer_1}, 보안:${form.subItems.customer_2}`);
+        // Collect all parts where at least one field is filled
+        if (form.subItems.customer_1 || form.subItems.customer_2) {
+            finalParts.push(`[고객소통] 안부:${form.subItems.customer_1 || '-'}, 보안:${form.subItems.customer_2 || '-'}`);
         }
-        if (form.subItems.appearance_1 && form.subItems.appearance_2) {
-            finalParts.push(`[외관점검] 표지판:${form.subItems.appearance_1}, 이물질:${form.subItems.appearance_2}`);
+        if (form.subItems.appearance_1 || form.subItems.appearance_2) {
+            finalParts.push(`[외관점검] 표지판:${form.subItems.appearance_1 || '-'}, 이물질:${form.subItems.appearance_2 || '-'}`);
         }
-        if (form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) {
-            finalParts.push(`[시스템점검] 카메라:${form.subItems.system_1}, 리더기:${form.subItems.system_2}, 락:${form.subItems.system_3}`);
+        if (form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) {
+            finalParts.push(`[시스템점검] 카메라:${form.subItems.system_1 || '-'}, 리더기:${form.subItems.system_2 || '-'}, 락:${form.subItems.system_3 || '-'}`);
         }
 
         if (finalParts.length === 0) {
@@ -251,9 +251,9 @@ export function InspectionForm() {
                     {/* Category Buttons */}
                     <div className="flex space-x-2 mb-4">
                         {[
-                            { id: 'customer', label: '고객소통', isComplete: !!(form.subItems.customer_1 && form.subItems.customer_2) },
-                            { id: 'system', label: '시스템점검', isComplete: !!(form.subItems.system_1 && form.subItems.system_2 && form.subItems.system_3) },
-                            { id: 'appearance', label: '외관점검', isComplete: !!(form.subItems.appearance_1 && form.subItems.appearance_2) },
+                            { id: 'customer', label: '고객소통', isComplete: !!(form.subItems.customer_1 || form.subItems.customer_2) },
+                            { id: 'system', label: '시스템점검', isComplete: !!(form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) },
+                            { id: 'appearance', label: '외관점검', isComplete: !!(form.subItems.appearance_1 || form.subItems.appearance_2) },
                         ].map((cat) => (
                             <button
                                 key={cat.id}

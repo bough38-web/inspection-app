@@ -74,37 +74,41 @@ const parseActivityDetails = (activityType: string) => {
     };
     if (!activityType) return result;
 
-    // Helper to parse a segment like "안부:양호, 보안:양호"
-    const parseSegment = (text: string) => {
-        const pairs = text.split(',').map(s => s.trim());
-        const map: Record<string, string> = {};
-        pairs.forEach(p => {
-            const [k, v] = p.split(':').map(s => s.trim());
-            if (k && v) map[k] = v;
-        });
-        return map;
-    };
-
-    // Extract segments for each category
-    const categories = [
-        { tag: '[고객소통]', keys: ['안부', '보안'], targets: ['customer_1', 'customer_2'] },
-        { tag: '[외관점검]', keys: ['표지판', '이물질'], targets: ['appearance_1', 'appearance_2'] },
-        { tag: '[시스템점검]', keys: ['카메라', '리더기', '락'], targets: ['system_1', 'system_2', 'system_3'] },
+    // Category mapping: Tag name -> Array of { searchKey, targetField }
+    const categoryConfig = [
+        {
+            tag: '[고객소통]',
+            fields: [{ key: '안부', field: 'customer_1' }, { key: '보안', field: 'customer_2' }]
+        },
+        {
+            tag: '[외관점검]',
+            fields: [{ key: '표지판', field: 'appearance_1' }, { key: '이물질', field: 'appearance_2' }]
+        },
+        {
+            tag: '[시스템점검]',
+            fields: [{ key: '카메라', field: 'system_1' }, { key: '리더기', field: 'system_2' }, { key: '락', field: 'system_3' }]
+        }
     ];
 
-    categories.forEach(cat => {
+    categoryConfig.forEach(cat => {
         if (activityType.includes(cat.tag)) {
-            // Find the start of this category's content
+            // Find content after this tag until the next [ tag or end of string
             const startIdx = activityType.indexOf(cat.tag) + cat.tag.length;
-            // Find the end: either the next [ or the end of the string
-            let nextTagIdx = activityType.indexOf('[', startIdx);
-            const segmentText = nextTagIdx === -1
+            const nextTagIdx = activityType.indexOf('[', startIdx);
+            const segment = nextTagIdx === -1
                 ? activityType.substring(startIdx)
                 : activityType.substring(startIdx, nextTagIdx);
 
-            const map = parseSegment(segmentText);
-            cat.keys.forEach((key, idx) => {
-                (result as any)[cat.targets[idx]] = map[key] || '';
+            // Parse individual values like "안부:양호, 보안:조치완료"
+            const pairs = segment.split(',').map(p => p.trim());
+            pairs.forEach(pair => {
+                const [k, v] = pair.split(':').map(val => val.trim());
+                if (k && v) {
+                    const match = cat.fields.find(f => f.key === k);
+                    if (match) {
+                        (result as any)[match.field] = v === '-' ? '' : v;
+                    }
+                }
             });
         }
     });

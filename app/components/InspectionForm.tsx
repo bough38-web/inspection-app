@@ -10,6 +10,7 @@ export function InspectionForm() {
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [theme, setTheme] = useState<'modern-light' | 'premium-dark'>('modern-light');
     const [form, setForm] = useState({
         branch: '',
         name: '',
@@ -209,257 +210,292 @@ export function InspectionForm() {
     }
 
     return (
-        <form
-            onSubmit={submit}
-            className="w-full max-w-md mx-auto space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100"
-            onPaste={(e) => e.preventDefault()} // Block paste
-        >
-            <div className="space-y-4">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-800">현장 점검 등록 <span className="text-sm text-blue-500 font-normal">(v2.0 New)</span></h2>
+        <div className={`min-h-screen transition-colors duration-500 py-6 px-4 ${theme === 'premium-dark' ? 'bg-[#0f172a]' : 'bg-slate-50'}`}>
+            <form
+                onSubmit={submit}
+                className={`w-full max-w-lg mx-auto space-y-6 p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 border ${theme === 'premium-dark'
+                    ? 'bg-slate-900/80 backdrop-blur-xl border-slate-700/50 text-white'
+                    : 'bg-white/90 backdrop-blur-xl border-white/20 text-gray-800'
+                    }`}
+                onPaste={(e) => e.preventDefault()} // Block paste
+            >
+                {/* Theme Switcher */}
+                <div className="flex justify-end space-x-2 -mt-2 mb-2">
                     <button
                         type="button"
-                        onClick={fillMockData}
-                        className="text-xs text-blue-500 hover:text-blue-700 underline"
+                        onClick={() => setTheme('modern-light')}
+                        className={`p-2 rounded-full transition-all ${theme === 'modern-light' ? 'bg-blue-100 text-blue-600 scale-110 shadow-sm' : 'text-gray-400 hover:bg-gray-100'}`}
+                        title="Modern Light Theme"
                     >
-                        샘플 데이터 채우기
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4-9H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M16.95 17.657l.707.707M7.05 7.05l.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z" /></svg>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setTheme('premium-dark')}
+                        className={`p-2 rounded-full transition-all ${theme === 'premium-dark' ? 'bg-indigo-900 text-indigo-300 scale-110 shadow-sm' : 'text-gray-400 hover:bg-slate-800'}`}
+                        title="Premium Dark Theme"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>
                     </button>
                 </div>
 
-                {errorMessage && (
-                    <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm break-keep">
-                        <b>오류 발생:</b><br />{errorMessage}
-                    </div>
-                )}
-
-                <div className="flex flex-col space-y-1">
-                    <label className="text-sm font-medium text-gray-700">지사 선택</label>
-                    <select
-                        value={form.branch}
-                        onChange={e => setForm({ ...form, branch: e.target.value })}
-                        className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                    >
-                        <option value="">지사를 선택하세요</option>
-                        {branches.map(b => (
-                            <option key={b} value={b}>{b}</option>
-                        ))}
-                    </select>
-                </div>
-
-                <Input
-                    label="담당자 이름"
-                    placeholder="홍길동"
-                    value={form.name}
-                    onChange={e => setForm({ ...form, name: e.target.value })}
-                />
-
-                {/* Contract Number removed as per request, but kept in state as empty for compatibility */}
-
-                <Input
-                    label="상호명"
-                    placeholder="(주)우리회사"
-                    value={form.business_name}
-                    onChange={e => setForm({ ...form, business_name: e.target.value })}
-                />
-
-                <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
-                    <div className="flex justify-between items-center mb-2">
-                        <h3 className="font-semibold text-gray-700">활동 내역 상세</h3>
-                        {form.activeCategory && (
-                            <button
-                                type="button"
-                                onClick={setAllActionComplete}
-                                className="text-xs bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors font-bold"
-                            >
-                                전체 조치완료
-                            </button>
-                        )}
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="space-y-1">
+                            <h2 className={`text-2xl font-black tracking-tight ${theme === 'premium-dark' ? 'text-white' : 'text-slate-800'}`}>
+                                현장 점검 등록
+                            </h2>
+                            <p className={`text-xs font-semibold uppercase tracking-widest ${theme === 'premium-dark' ? 'text-blue-400' : 'text-blue-600'}`}>v2.0 Premium</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={fillMockData}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${theme === 'premium-dark'
+                                ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-blue-400'
+                                : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600'
+                                }`}
+                        >
+                            샘플 데이터
+                        </button>
                     </div>
 
-                    {/* Category Buttons */}
-                    <div className="flex space-x-2 mb-4">
-                        {[
-                            { id: 'customer', label: '고객소통', isComplete: !!(form.subItems.customer_1 || form.subItems.customer_2) },
-                            { id: 'system', label: '시스템점검', isComplete: !!(form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) },
-                            { id: 'appearance', label: '외관점검', isComplete: !!(form.subItems.appearance_1 || form.subItems.appearance_2) },
-                        ].map((cat) => (
-                            <button
-                                key={cat.id}
-                                type="button"
-                                onClick={() => setForm({ ...form, activeCategory: cat.id as any })}
-                                className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-2 ${form.activeCategory === cat.id
-                                    ? 'bg-blue-600 border-blue-600 text-white shadow-md'
-                                    : 'bg-white text-gray-700 border-gray-200 hover:border-blue-200'
-                                    }`}
-                            >
-                                <span className="flex items-center gap-1">
-                                    {cat.label}
-                                    {cat.isComplete && (
-                                        <svg className="w-3.5 h-3.5 text-green-500 fill-current" viewBox="0 0 20 20">
-                                            <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-                                        </svg>
-                                    )}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Dynamic Content based on Active Category */}
-                    {form.activeCategory === 'customer' && (
-                        <div className="space-y-3 animate-fadeIn">
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">1. 안부인사 및 불편사항 점검</label>
-                                <select
-                                    value={form.subItems.customer_1}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_1: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">2. 보안 이슈 사전 청취</label>
-                                <select
-                                    value={form.subItems.customer_2}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
+                    {errorMessage && (
+                        <div className={`p-4 rounded-2xl text-sm break-keep border animate-shake ${theme === 'premium-dark'
+                            ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                            : 'bg-red-50 border-red-200 text-red-700'
+                            }`}>
+                            <b className="font-bold">오류:</b> {errorMessage}
                         </div>
                     )}
 
-                    {form.activeCategory === 'appearance' && (
-                        <div className="space-y-3 animate-fadeIn">
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">1. 표지판(스티커) 교체</label>
-                                <select
-                                    value={form.subItems.appearance_1}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_1: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">2. 장비 이물질 제거(환경개선)</label>
-                                <select
-                                    value={form.subItems.appearance_2}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_2: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {form.activeCategory === 'system' && (
-                        <div className="space-y-3 animate-fadeIn">
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">1. 카메라 정상 작동 확인</label>
-                                <select
-                                    value={form.subItems.system_1}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_1: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">2. 영상저장장치 리더기 점검</label>
-                                <select
-                                    value={form.subItems.system_2}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_2: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                            <div className="flex flex-col space-y-1">
-                                <label className="text-sm font-medium text-gray-700">3. 락 정상 작동여부 확인</label>
-                                <select
-                                    value={form.subItems.system_3}
-                                    onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_3: e.target.value } })}
-                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
-                                >
-                                    <option value="">상태 선택</option>
-                                    <option value="양호">양호</option>
-                                    <option value="조치완료">조치완료</option>
-                                    <option value="해당없음">해당없음</option>
-                                </select>
-                            </div>
-                        </div>
-                    )}
-
-                    {!form.activeCategory && (
-                        <div className="text-center py-4 text-gray-500 text-sm">
-                            상단 버튼을 눌러 점검 항목을 선택해주세요.
-                        </div>
-                    )}
-                </div>
-
-                {form.activeCategory === 'appearance' && (
-                    <div className="space-y-2 animate-fadeIn">
-                        <label className="text-sm font-medium text-gray-700">현장 사진 (최대 3장)</label>
-                        <div className="grid grid-cols-3 gap-2">
-                            {imageUrls.map((url, idx) => (
-                                <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200">
-                                    <img src={url} alt="preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(idx)}
-                                        className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                                    >
-                                        삭제
-                                    </button>
-                                </div>
+                    <div className="flex flex-col space-y-1">
+                        <label className="text-sm font-medium text-gray-700">지사 선택</label>
+                        <select
+                            value={form.branch}
+                            onChange={e => setForm({ ...form, branch: e.target.value })}
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
+                        >
+                            <option value="">지사를 선택하세요</option>
+                            {branches.map(b => (
+                                <option key={b} value={b}>{b}</option>
                             ))}
-                            {imageUrls.length < 3 && (
+                        </select>
+                    </div>
+
+                    <Input
+                        label="담당자 이름"
+                        placeholder="홍길동"
+                        value={form.name}
+                        onChange={e => setForm({ ...form, name: e.target.value })}
+                    />
+
+                    {/* Contract Number removed as per request, but kept in state as empty for compatibility */}
+
+                    <Input
+                        label="상호명"
+                        placeholder="(주)우리회사"
+                        value={form.business_name}
+                        onChange={e => setForm({ ...form, business_name: e.target.value })}
+                    />
+
+                    <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
+                        <div className="flex justify-between items-center mb-2">
+                            <h3 className="font-semibold text-gray-700">활동 내역 상세</h3>
+                            {form.activeCategory && (
                                 <button
                                     type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
+                                    onClick={setAllActionComplete}
+                                    className="text-xs bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors font-bold"
                                 >
-                                    +
+                                    전체 조치완료
                                 </button>
                             )}
                         </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            capture="environment" // Prefer rear camera
-                            onChange={handleImageUpload}
-                        />
-                        <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
-                    </div>
-                )}
-            </div>
 
-            <Button type="submit" loading={loading} className="w-full h-12 text-lg">
-                제출하기
-            </Button>
-        </form>
-    );
+                        {/* Category Buttons */}
+                        <div className="flex space-x-2 mb-4">
+                            {[
+                                { id: 'customer', label: '고객소통', isComplete: !!(form.subItems.customer_1 || form.subItems.customer_2) },
+                                { id: 'system', label: '시스템점검', isComplete: !!(form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) },
+                                { id: 'appearance', label: '외관점검', isComplete: !!(form.subItems.appearance_1 || form.subItems.appearance_2) },
+                            ].map((cat) => (
+                                <button
+                                    key={cat.id}
+                                    type="button"
+                                    onClick={() => setForm({ ...form, activeCategory: cat.id as any })}
+                                    className={`flex-1 py-2 px-1 rounded-lg text-xs font-bold transition-all flex flex-col items-center justify-center gap-1 border-2 ${form.activeCategory === cat.id
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md'
+                                        : 'bg-white text-gray-700 border-gray-200 hover:border-blue-200'
+                                        }`}
+                                >
+                                    <span className="flex items-center gap-1">
+                                        {cat.label}
+                                        {cat.isComplete && (
+                                            <svg className="w-3.5 h-3.5 text-green-500 fill-current" viewBox="0 0 20 20">
+                                                <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+                                            </svg>
+                                        )}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Dynamic Content based on Active Category */}
+                        {form.activeCategory === 'customer' && (
+                            <div className="space-y-3 animate-fadeIn">
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">1. 안부인사 및 불편사항 점검</label>
+                                    <select
+                                        value={form.subItems.customer_1}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_1: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">2. 보안 이슈 사전 청취</label>
+                                    <select
+                                        value={form.subItems.customer_2}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
+                        {form.activeCategory === 'appearance' && (
+                            <div className="space-y-3 animate-fadeIn">
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">1. 표지판(스티커) 교체</label>
+                                    <select
+                                        value={form.subItems.appearance_1}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_1: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">2. 장비 이물질 제거(환경개선)</label>
+                                    <select
+                                        value={form.subItems.appearance_2}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_2: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
+                        {form.activeCategory === 'system' && (
+                            <div className="space-y-3 animate-fadeIn">
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">1. 카메라 정상 작동 확인</label>
+                                    <select
+                                        value={form.subItems.system_1}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_1: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">2. 영상저장장치 리더기 점검</label>
+                                    <select
+                                        value={form.subItems.system_2}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_2: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                                <div className="flex flex-col space-y-1">
+                                    <label className="text-sm font-medium text-gray-700">3. 락 정상 작동여부 확인</label>
+                                    <select
+                                        value={form.subItems.system_3}
+                                        onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_3: e.target.value } })}
+                                        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors bg-white text-sm"
+                                    >
+                                        <option value="">상태 선택</option>
+                                        <option value="양호">양호</option>
+                                        <option value="조치완료">조치완료</option>
+                                        <option value="해당없음">해당없음</option>
+                                    </select>
+                                </div>
+                            </div>
+                        )}
+
+                        {!form.activeCategory && (
+                            <div className="text-center py-4 text-gray-500 text-sm">
+                                상단 버튼을 눌러 점검 항목을 선택해주세요.
+                            </div>
+                        )}
+                    </div>
+
+                    {form.activeCategory === 'appearance' && (
+                        <div className="space-y-2 animate-fadeIn">
+                            <label className="text-sm font-medium text-gray-700">현장 사진 (최대 3장)</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {imageUrls.map((url, idx) => (
+                                    <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-gray-200">
+                                        <img src={url} alt="preview" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => removeImage(idx)}
+                                            className="absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                        >
+                                            삭제
+                                        </button>
+                                    </div>
+                                ))}
+                                {imageUrls.length < 3 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="aspect-square rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors"
+                                    >
+                                        +
+                                    </button>
+                                )}
+                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                className="hidden"
+                                accept="image/*"
+                                capture="environment" // Prefer rear camera
+                                onChange={handleImageUpload}
+                            />
+                            <p className="text-xs text-gray-500">최대 3장까지만 등록 가능합니다.</p>
+                        </div>
+                    )}
+                </div>
+
+                <Button type="submit" loading={loading} className="w-full h-12 text-lg">
+                    제출하기
+                </Button>
+            </form>
+            );
 }

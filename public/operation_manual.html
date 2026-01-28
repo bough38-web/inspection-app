@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시스템 상세 운영 매뉴얼 - 현장 점검 시스템</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans KR', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .premium-blue {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        }
+
+        .sidebar-link.active {
+            background: #eff6ff;
+            color: #2563eb;
+            border-right: 4px solid #2563eb;
+        }
+
+        pre.mermaid {
+            background: white !important;
+            border: none !important;
+            display: flex;
+            justify-content: center;
+        }
+
+        .image-card {
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover {
+            transform: translateY(-5px);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Mobile Navigation Toggle -->
+    <div class="lg:hidden fixed bottom-6 right-6 z-50">
+        <button onclick="toggleSidebar()"
+            class="w-14 h-14 premium-blue text-white rounded-full shadow-2xl flex items-center justify-center text-2xl">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </div>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar"
+            class="hidden lg:block fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-200 z-40 overflow-y-auto transition-all">
+            <div class="p-8">
+                <div class="flex items-center gap-3 mb-10">
+                    <div class="w-10 h-10 premium-blue rounded-xl flex items-center justify-center text-white text-xl">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-black text-lg leading-tight">현장 점검<br><span class="text-blue-600">시스템 매뉴얼</span>
+                        </h1>
+                    </div>
+                </div>
+
+                <nav class="space-y-1">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4 mb-2">통합 가이드</p>
+                    <a href="#overview"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 active transition">
+                        <i class="fa-solid fa-map w-6"></i> 시스템 아키텍처
+                    </a>
+                    <a href="#login"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-right-to-bracket w-6"></i> 로그인 게이트
+                    </a>
+
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4 mt-8 mb-2">역할별 가이드</p>
+                    <a href="#field"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-mobile-screen w-6"></i> 1. 현장 직원 (User)
+                    </a>
+                    <a href="#branch"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-building-user w-6"></i> 2. 지사 관리자 (Branch)
+                    </a>
+                    <a href="#admin"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-user-gear w-6"></i> 3. 본부관리자 (Master)
+                    </a>
+
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-4 mt-8 mb-2">부록</p>
+                    <a href="#troubleshooting"
+                        class="sidebar-link block px-4 py-3 rounded-lg text-sm font-semibold text-slate-600 hover:bg-slate-50 transition">
+                        <i class="fa-solid fa-circle-question w-6"></i> 자주 묻는 질문
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 lg:ml-72 min-h-screen px-6 lg:px-12 py-12">
+            <div class="max-w-4xl mx-auto space-y-24">
+
+                <!-- OVERVIEW SECTION -->
+                <section id="overview" class="scroll-mt-12">
+                    <div class="mb-10">
+                        <h2 class="text-4xl font-black tracking-tight text-slate-900 mb-4">전체 시스템 아키텍처</h2>
+                        <p class="text-slate-500 text-lg">데이터가 현장에서 본부 관리까지 흐르는 전체 프로세스입니다.</p>
+                    </div>
+
+                    <div class="glass p-8 rounded-[2rem] shadow-xl overflow-hidden">
+                        <pre class="mermaid mb-0">
+                            graph LR
+                                A[현장 직원] -->|모바일 접속| B(점검 등록)
+                                B --> |데이터 전송| C{백엔드}
+                                C --> |암호화 저장| D[(DB / Storage)]
+                                D --> |지사별 조회| E[지사 관리자]
+                                D --> |전체 관리| F[본부관리자]
+                                E --> |Excel| G[지사 보고서]
+                                F --> |Excel| H[통합 보고서]
+                        </pre>
+                    </div>
+                </section>
+
+                <!-- LOGIN GATE SECTION -->
+                <section id="login" class="scroll-mt-12">
+                    <div class="mb-10">
+                        <h2 class="text-4xl font-black tracking-tight text-slate-900 mb-4">공통 로그인 게이트</h2>
+                        <p class="text-slate-500 text-lg">권한에 따라 접속 경로와 관리 범위가 달라집니다.</p>
+                    </div>
+
+                    <div class="grid lg:grid-cols-2 gap-10 items-center">
+                        <div class="space-y-6">
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h3 class="font-bold text-lg mb-2"><i
+                                        class="fa-solid fa-building text-blue-500 mr-2"></i> 지사용 로그인</h3>
+                                <p class="text-sm text-slate-600">각 지역 지사는 할당된 지사명을 선택하고 비밀번호를 입력하여 접속합니다. **본인 지사의
+                                    데이터만** 볼 수 있습니다.</p>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                <h3 class="font-bold text-lg mb-2"><i class="fa-solid fa-crown text-amber-500 mr-2"></i>
+                                    본부관리자용 로그인</h3>
+                                <p class="text-sm text-slate-600">본부 본부관리자는 모든 지사의 데이터를 조회, 수정, 삭제 및 엑셀 다운로드 할 수 있는 마스터
+                                    권한을 가집니다.</p>
+                            </div>
+                        </div>
+                        <div class="image-card">
+                            <img src="manual_assets/login_choice.png" alt="Login Screen"
+                                class="rounded-3xl shadow-2xl border-4 border-white">
+                            <p class="text-center text-xs text-slate-400 mt-4 italic">지사/관리자 선택 로그인 인터페이스</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- FIELD USER SECTION -->
+                <section id="field" class="scroll-mt-12">
+                    <div class="flex items-center gap-5 mb-10 pb-6 border-b-2 border-slate-200">
+                        <div
+                            class="w-14 h-14 bg-blue-100 rounded-[1.2rem] flex items-center justify-center text-blue-600 text-2xl shadow-inner">
+                            <i class="fa-solid fa-hard-hat"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900">현장 직원 매뉴얼</h2>
+                            <p class="text-slate-500 font-medium">Field Staff Operation Guide</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-16">
+                        <!-- Step 1 -->
+                        <div class="relative pl-12">
+                            <div
+                                class="absolute left-0 top-0 w-8 h-8 premium-blue text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
+                                1</div>
+                            <h3 class="text-xl font-bold mb-4">테마 선택 및 기본 정보 입력</h3>
+                            <p class="text-slate-600 mb-8">모바일 접속 시 환경에 맞춰 라이트/다크 테마를 선택할 수 있습니다. 지사 선택 후 담당자 이름과 상호명을
+                                입력합니다.</p>
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <img src="manual_assets/field_light_theme.png" alt="Light Theme"
+                                    class="rounded-2xl shadow-xl border border-slate-200">
+                                <img src="manual_assets/field_dark_theme.png" alt="Dark Theme"
+                                    class="rounded-2xl shadow-xl border border-slate-900">
+                            </div>
+                        </div>
+
+                        <!-- Step 2 -->
+                        <div class="relative pl-12">
+                            <div
+                                class="absolute left-0 top-0 w-8 h-8 premium-blue text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
+                                2</div>
+                            <h3 class="text-xl font-bold mb-4">항목별 점검 및 사진 촬영</h3>
+                            <p class="text-slate-600 mb-6">항목(고객/시스템/외관)을 탭하여 세부 점검을 진행합니다. 사진이 필요한 '외관점검'의 경우 최대 3장까지
+                                촬영 버튼이 활성화됩니다.</p>
+                            <div class="bg-blue-50 p-6 rounded-[2rem] border border-blue-100 flex items-start gap-4">
+                                <i class="fa-solid fa-lightbulb text-blue-500 text-xl mt-1"></i>
+                                <p class="text-sm text-blue-800 leading-relaxed font-medium">**팁:** "전체 조치완료" 버튼을 누르면 해당
+                                    탭의 모든 항목이 자동으로 '조치완료' 처리되어 업무 효율이 높아집니다.</p>
+                            </div>
+                        </div>
+
+                        <!-- Step 3 -->
+                        <div class="relative pl-12">
+                            <div
+                                class="absolute left-0 top-0 w-8 h-8 premium-blue text-white rounded-full flex items-center justify-center font-bold text-sm shadow-lg">
+                                3</div>
+                            <h3 class="text-xl font-bold mb-4">제출 및 등록 확인</h3>
+                            <p class="text-slate-600 mb-8">하단의 '점검 결과 제출하기' 버튼을 누르면 데이터가 서버로 전송되며, 성공 시 아래와 같은 완료 화면이
+                                표시됩니다.</p>
+                            <div class="max-w-sm mx-auto">
+                                <img src="manual_assets/step_complete.jpg" alt="Success Screen"
+                                    class="rounded-3xl shadow-2xl border-4 border-white">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- BRANCH/ADMIN SECTION -->
+                <section id="branch" class="scroll-mt-12">
+                    <div class="flex items-center gap-5 mb-10 pb-6 border-b-2 border-slate-200">
+                        <div
+                            class="w-14 h-14 bg-slate-800 rounded-[1.2rem] flex items-center justify-center text-white text-2xl">
+                            <i class="fa-solid fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-black text-slate-900">지사 및 본부관리자 대시보드</h2>
+                            <p class="text-slate-500 font-medium">Management & Analytics Guide</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-10">
+                        <img src="manual_assets/admin_dashboard.png" alt="Admin Dashboard"
+                            class="w-full rounded-[2.5rem] shadow-2xl border-8 border-white">
+
+                        <div class="grid md:grid-cols-3 gap-6">
+                            <div
+                                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:border-blue-200 transition">
+                                <h4 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-tighter">Data
+                                    Overview</h4>
+                                <p class="text-3xl font-black text-slate-900 mb-2">실시간 통계</p>
+                                <p class="text-sm text-slate-500">당일 등록 건수 및 총 누적 데이터를 대시보드 상단에서 즉시 확인 가능합니다.</p>
+                            </div>
+                            <div
+                                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:border-green-200 transition">
+                                <h4 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-tighter">Export
+                                </h4>
+                                <p class="text-3xl font-black text-slate-900 mb-2">이미지 포함 엑셀</p>
+                                <p class="text-sm text-slate-500">엑셀 다운로드 시 현장 사진이 셀 내부로 자동 삽입되어 별도의 편집 과정이 필요 없습니다.</p>
+                            </div>
+                            <div
+                                class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:border-red-200 transition">
+                                <h4 class="font-black text-slate-400 text-xs uppercase mb-4 tracking-tighter">Security
+                                </h4>
+                                <p class="text-3xl font-black text-slate-900 mb-2">중요 정보 암호화</p>
+                                <p class="text-sm text-slate-500">고객 상호명 등 민감 정보는 DB에 암호화되어 저장되며 관리자에게만 복호화되어 보여집니다.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- TROUBLESHOOTING -->
+                <section id="troubleshooting"
+                    class="scroll-mt-12 bg-white p-12 rounded-[3rem] border border-slate-200 shadow-sm">
+                    <h2 class="text-2xl font-black mb-8">자주 묻는 질문 (FAQ)</h2>
+                    <div class="space-y-6">
+                        <details class="group border-b border-slate-100 pb-4">
+                            <summary class="flex justify-between items-center font-bold cursor-pointer list-none">
+                                <span>Q. 사진 업로드가 너무 오래 걸려요.</span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition"></i>
+                            </summary>
+                            <p class="mt-4 text-sm text-slate-600 leading-relaxed">
+                                앱 자체에 클라이언트 압축 로직이 내장되어 있습니다. 네트워크 환경이 불안정할 경우 3G/LTE 환경보다는 가급적 안정적인 신호 상태에서 제출을 권장합니다.
+                            </p>
+                        </details>
+                        <details class="group border-b border-slate-100 pb-4">
+                            <summary class="flex justify-between items-center font-bold cursor-pointer list-none">
+                                <span>Q. 지사 관리자가 다른 지사의 데이터를 지울 수 있나요?</span>
+                                <i class="fa-solid fa-chevron-down text-slate-400 group-open:rotate-180 transition"></i>
+                            </summary>
+                            <p class="mt-4 text-sm text-slate-600 leading-relaxed">
+                                불가능합니다. 각 지사 관리자는 본인 지사 소속 데이터만 조회 가능하도록 필터링되어 있습니다. 일괄 삭제 및 전체 조희는 오직
+                                **본부관리자(Master)**만 가능합니다.
+                            </p>
+                        </details>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('block');
+        }
+
+        // Active Link Highlighting
+        const links = document.querySelectorAll('.sidebar-link');
+        const sections = document.querySelectorAll('section');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            links.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

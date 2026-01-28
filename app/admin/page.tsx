@@ -8,9 +8,12 @@ export default function AdminPage() {
     const [authorized, setAuthorized] = useState(false);
 
     useEffect(() => {
-        // Simple auth check
-        const isAdmin = document.cookie.includes('is_admin=true') || localStorage.getItem('is_admin') === 'true';
-        if (!isAdmin) {
+        // Simple auth check to allow both manager and branch roles
+        const userRole = localStorage.getItem('user_role');
+        const hasAdminFlag = document.cookie.includes('is_admin=true') || localStorage.getItem('is_admin') === 'true';
+        const hasBranchFlag = document.cookie.includes('branch_name=') || !!localStorage.getItem('branch_name');
+
+        if (!userRole && !hasAdminFlag && !hasBranchFlag) {
             router.replace('/admin/login');
         } else {
             setAuthorized(true);

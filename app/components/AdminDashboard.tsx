@@ -74,28 +74,26 @@ const parseActivityDetails = (activityType: string) => {
     };
     if (!activityType) return result;
 
+    // Remove the [CategoryTag] and any leading whitespace
+    const content = activityType.replace(/^\[.*?\]\s*/, '');
+
+    // Split by comma and trim each part to handle inconsistent spacing
+    const pairs = content.split(',').map(s => s.trim());
+
+    // Build a map of key-value pairs
+    const map: Record<string, string> = {};
+    pairs.forEach(p => {
+        const [k, v] = p.split(':').map(s => s.trim());
+        if (k && v) map[k] = v;
+    });
+
     if (activityType.includes('[고객소통]')) {
-        // Format: [고객소통] 안부:양호, 보안:조치완료
-        const map = activityType.replace('[고객소통] ', '').split(', ').reduce((acc, curr) => {
-            const [k, v] = curr.split(':');
-            acc[k] = v; return acc;
-        }, {} as any);
         result.customer_1 = map['안부'] || '';
         result.customer_2 = map['보안'] || '';
     } else if (activityType.includes('[외관점검]')) {
-        // Format: [외관점검] 표지판:양호, 이물질:조치완료
-        const map = activityType.replace('[외관점검] ', '').split(', ').reduce((acc, curr) => {
-            const [k, v] = curr.split(':');
-            acc[k] = v; return acc;
-        }, {} as any);
         result.appearance_1 = map['표지판'] || '';
         result.appearance_2 = map['이물질'] || '';
     } else if (activityType.includes('[시스템점검]')) {
-        // Format: [시스템점검] 카메라:양호, 리더기:양호, 락:양호
-        const map = activityType.replace('[시스템점검] ', '').split(', ').reduce((acc, curr) => {
-            const [k, v] = curr.split(':');
-            acc[k] = v; return acc;
-        }, {} as any);
         result.system_1 = map['카메라'] || '';
         result.system_2 = map['리더기'] || '';
         result.system_3 = map['락'] || '';

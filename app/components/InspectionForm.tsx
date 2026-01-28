@@ -49,6 +49,23 @@ export function InspectionForm() {
         });
     };
 
+    const setAllActionComplete = () => {
+        if (!form.activeCategory) return;
+        const newSubItems = { ...form.subItems };
+        if (form.activeCategory === 'customer') {
+            newSubItems.customer_1 = '조치완료';
+            newSubItems.customer_2 = '조치완료';
+        } else if (form.activeCategory === 'appearance') {
+            newSubItems.appearance_1 = '조치완료';
+            newSubItems.appearance_2 = '조치완료';
+        } else if (form.activeCategory === 'system') {
+            newSubItems.system_1 = '조치완료';
+            newSubItems.system_2 = '조치완료';
+            newSubItems.system_3 = '조치완료';
+        }
+        setForm({ ...form, subItems: newSubItems });
+    };
+
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             const file = e.target.files[0]; // Take only the first file
@@ -69,13 +86,13 @@ export function InspectionForm() {
 
             // Auto-trigger next capture if less than 3
             if (totalFiles < 3) {
-                // Short delay to allow UI update and prevent browser blocking
+                // Reduced delay for faster transition
                 setTimeout(() => {
                     if (fileInputRef.current) {
                         fileInputRef.current.value = ''; // Reset input
                         fileInputRef.current.click();
                     }
-                }, 500);
+                }, 300);
             }
         }
     };
@@ -246,7 +263,18 @@ export function InspectionForm() {
                 />
 
                 <div className="p-4 bg-gray-50 rounded-lg space-y-4 border border-gray-200">
-                    <h3 className="font-semibold text-gray-700 mb-2">활동 내역 상세</h3>
+                    <div className="flex justify-between items-center mb-2">
+                        <h3 className="font-semibold text-gray-700">활동 내역 상세</h3>
+                        {form.activeCategory && (
+                            <button
+                                type="button"
+                                onClick={setAllActionComplete}
+                                className="text-xs bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 transition-colors font-bold"
+                            >
+                                전체 조치완료
+                            </button>
+                        )}
+                    </div>
 
                     {/* Category Buttons */}
                     <div className="flex space-x-2 mb-4">

@@ -412,6 +412,21 @@ export function AdminDashboard() {
                             </span>
                         ) : '엑셀 다운로드 (전체)'}
                     </Button>
+                    {userRole === 'manager' && (
+                        <Button
+                            variant="secondary"
+                            onClick={handleDeleteSelected}
+                            className="px-4 py-2.5 rounded-xl font-semibold bg-red-50 hover:bg-red-100 text-red-600 border-red-100 transition-colors"
+                            onDoubleClick={() => {
+                                if (confirm('정말 모든 데이터를 초기화(전체 삭제)하시겠습니까?')) {
+                                    setSelectedIds(new Set(filteredInspections.map(i => i.id)));
+                                    setTimeout(() => handleDeleteSelected(), 100);
+                                }
+                            }}
+                        >
+                            초기화 (더블클릭)
+                        </Button>
+                    )}
                 </div>
             </header>
 
@@ -512,6 +527,7 @@ export function AdminDashboard() {
                                             className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 transition-colors cursor-pointer"
                                         />
                                     </th>
+                                    <th className="px-6 py-4 w-12 text-center text-gray-900">No.</th>
                                     <th className="px-6 py-4 font-semibold">등록일시</th>
                                     <th className="px-6 py-4 font-semibold">지사</th>
                                     <th className="px-6 py-4 font-semibold">담당자/상호</th>
@@ -535,7 +551,7 @@ export function AdminDashboard() {
                                 ) : filteredInspections.length === 0 ? (
                                     <tr><td colSpan={6} className="text-center py-20 text-gray-400">데이터가 없습니다.</td></tr>
                                 ) : (
-                                    filteredInspections.map((item) => (
+                                    filteredInspections.map((item, index) => (
                                         <tr
                                             key={item.id}
                                             className={`hover:bg-blue-50/30 transition-colors duration-200 group ${selectedIds.has(item.id) ? 'bg-blue-50/60' : ''}`}
@@ -547,6 +563,9 @@ export function AdminDashboard() {
                                                     onChange={() => toggleSelect(item.id)}
                                                     className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 cursor-pointer"
                                                 />
+                                            </td>
+                                            <td className="px-6 py-4 text-center font-bold text-gray-400">
+                                                {filteredInspections.length - index}
                                             </td>
                                             <td className="px-6 py-4 text-gray-900 font-medium">
                                                 {new Date(item.created_at).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}

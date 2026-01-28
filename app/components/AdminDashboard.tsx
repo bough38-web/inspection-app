@@ -138,7 +138,7 @@ export function AdminDashboard() {
 
     // Filter Inspections based on Login Context
     const [filteredInspections, setFilteredInspections] = useState<Inspection[]>([]);
-    const [userRole, setUserRole] = useState('manager');
+    const [userRole, setUserRole] = useState<string | null>(null);
     const [userBranch, setUserBranch] = useState('');
 
     const isInitialized = useRef(false);
@@ -150,6 +150,8 @@ export function AdminDashboard() {
         const role = localStorage.getItem('user_role');
         const branch = localStorage.getItem('branch_name') || '';
 
+        console.log('Dashboard Init - Role:', role, 'Branch:', branch); // Debug log
+
         if (!role) {
             window.location.href = '/admin/login';
             return;
@@ -159,16 +161,10 @@ export function AdminDashboard() {
         setUserBranch(branch);
 
         // Clear storage to force logout on refresh
-        // We set a flag in sessionStorage to allow current session persistence if needed? 
-        // User asked "refresh -> logout", so simply clearing localStorage works.
-        // But if we clear it, then `fetchInspections` or other things interacting with it might fail?
-        // Actually fetchInspections doesn't use localStorage.
-        // But if user clicks refresh, this effect runs again, role is null => redirect. Perfect.
         localStorage.removeItem('user_role');
         localStorage.removeItem('branch_name');
         localStorage.removeItem('is_admin');
 
-        // Remove cookie too just in case
         document.cookie = "is_admin=; path=/; max-age=0";
         document.cookie = "branch_name=; path=/; max-age=0";
     }, []);
@@ -182,9 +178,16 @@ export function AdminDashboard() {
     };
 
     useEffect(() => {
-        if (userRole === 'branch' && userBranch) {
-            setFilteredInspections(inspections.filter(i => i.branch === userBranch));
+        if (!userRole) return; // Wait for role to be set
+
+        if (userRole === 'branch') {
+            if (userBranch) {
+                setFilteredInspections(inspections.filter(i => i.branch === userBranch));
+            } else {
+                setFilteredInspections([]); // Safety: If branch user but no branch name, show nothing
+            }
         } else {
+            // Manager sees all
             setFilteredInspections(inspections);
         }
     }, [inspections, userRole, userBranch]);

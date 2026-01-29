@@ -328,7 +328,7 @@ export function AdminDashboard() {
                                 const webpBlob = await res.blob();
                                 const pngBuffer = await convertWebPToPNG(webpBlob);
                                 const imageId = workbook.addImage({ buffer: pngBuffer, extension: 'png' });
-                                const colIndex = 13 + (p - 1);
+                                const colIndex = 12 + (p - 1);
                                 sheet.addImage(imageId, {
                                     tl: { col: colIndex, row: rowIndex - 1 },
                                     br: { col: colIndex + 1, row: rowIndex },

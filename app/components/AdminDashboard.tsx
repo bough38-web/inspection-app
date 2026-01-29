@@ -78,15 +78,15 @@ const parseActivityDetails = (activityType: string) => {
     const categoryConfig = [
         {
             tag: '[고객소통]',
-            fields: [{ key: '안부', field: 'customer_1' }, { key: '보안', field: 'customer_2' }]
+            fields: [{ key: '장비사용불편', field: 'customer_1' }, { key: '서비스불만', field: 'customer_2' }]
         },
         {
-            tag: '[외관점검]',
-            fields: [{ key: '표지판', field: 'appearance_1' }, { key: '이물질', field: 'appearance_2' }]
+            tag: '[환경점검]',
+            fields: [{ key: '표지판', field: 'appearance_1' }, { key: '장비외관', field: 'appearance_2' }]
         },
         {
-            tag: '[시스템점검]',
-            fields: [{ key: '카메라', field: 'system_1' }, { key: '리더기', field: 'system_2' }, { key: '락', field: 'system_3' }]
+            tag: '[시스템]',
+            fields: [{ key: '방범장비', field: 'system_1' }, { key: '영상장비', field: 'system_2' }]
         }
     ];
 
@@ -112,6 +112,14 @@ const parseActivityDetails = (activityType: string) => {
             });
         }
     });
+
+    // Handle (내역:...) part for customer_2
+    if (activityType.includes('(내역:')) {
+        const detailPart = activityType.match(/\(내역:([^)]+)\)/);
+        if (detailPart && detailPart[1]) {
+            result.customer_2 += ` (${detailPart[1]})`;
+        }
+    }
 
     return result;
 };
@@ -267,16 +275,15 @@ export function AdminDashboard() {
                 { header: 'ID', key: 'id', width: 15 },
                 { header: '날짜', key: 'date', width: 15 },
                 { header: '지사', key: 'branch', width: 10 },
-                { header: '담당자', key: 'name', width: 10 },
-                { header: '계약번호', key: 'contract_no', width: 15 },
+                { header: '방문자', key: 'name', width: 10 },
+                { header: '서비스번호', key: 'contract_no', width: 15 },
                 { header: '상호명', key: 'business_name', width: 20 },
-                { header: '고객_안부', key: 'customer_1', width: 12 },
-                { header: '고객_보안', key: 'customer_2', width: 12 },
-                { header: '외관_표지판', key: 'appearance_1', width: 12 },
-                { header: '외관_이물질', key: 'appearance_2', width: 12 },
-                { header: '시스템_카메라', key: 'system_1', width: 12 },
-                { header: '시스템_리더기', key: 'system_2', width: 12 },
-                { header: '시스템_락', key: 'system_3', width: 12 },
+                { header: '소통_불편', key: 'customer_1', width: 12 },
+                { header: '소통_불만', key: 'customer_2', width: 25 },
+                { header: '환경_표지판', key: 'appearance_1', width: 12 },
+                { header: '환경_외관', key: 'appearance_2', width: 12 },
+                { header: '시스템_방범', key: 'system_1', width: 12 },
+                { header: '시스템_영상', key: 'system_2', width: 12 },
                 { header: '사진1', key: 'photo1', width: 20 },
                 { header: '사진2', key: 'photo2', width: 20 },
                 { header: '사진3', key: 'photo3', width: 20 },
@@ -463,9 +470,9 @@ export function AdminDashboard() {
                         </div>
                     )}
 
-                    {/* Manager Stats (New) */}
+                    {/* Visitor Stats (Updated Label) */}
                     <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><span className="w-2 h-6 bg-orange-500 rounded-full"></span>담당자별 성과</h2>
+                        <h2 className="text-lg font-bold text-gray-800 mb-6 flex items-center gap-2"><span className="w-2 h-6 bg-orange-500 rounded-full"></span>방문자별 성과</h2>
                         <div className="space-y-5 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                             {sortedManagers.length === 0 && <div className="text-gray-400 text-center py-10 bg-gray-50 rounded-2xl">데이터가 없습니다</div>}
                             {sortedManagers.map(([manager, count]) => (
@@ -530,7 +537,7 @@ export function AdminDashboard() {
                                     <th className="px-6 py-4 w-12 text-center text-gray-900">No.</th>
                                     <th className="px-6 py-4 font-semibold">등록일시</th>
                                     <th className="px-6 py-4 font-semibold">지사</th>
-                                    <th className="px-6 py-4 font-semibold">담당자/상호</th>
+                                    <th className="px-6 py-4 font-semibold">방문자/서비스번호/상호</th>
                                     <th className="px-6 py-4 font-semibold">활동내역</th>
                                     <th className="px-6 py-4 text-right font-semibold">관리</th>
                                 </tr>
@@ -578,7 +585,12 @@ export function AdminDashboard() {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
                                                     <span className="font-bold text-gray-800">{item.business_name}</span>
-                                                    <span className="text-xs text-gray-400">{item.name}</span>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <span className="text-xs font-semibold py-0.5 px-1.5 bg-blue-50 text-blue-600 rounded">{item.name}</span>
+                                                        {item.contract_no && (
+                                                            <span className="text-xs text-slate-400 font-medium">#{item.contract_no}</span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">

@@ -14,17 +14,17 @@ export function InspectionForm() {
     const [form, setForm] = useState({
         branch: '',
         name: '',
-        contract_no: '',
+        service_no: '',
         business_name: '',
         activeCategory: '' as 'customer' | 'appearance' | 'system' | '',
         subItems: {
-            customer_1: '',
-            customer_2: '',
-            appearance_1: '',
-            appearance_2: '',
-            system_1: '',
-            system_2: '',
-            system_3: ''
+            customer_1: '', // 장비사용 불편사항
+            customer_2: '', // 서비스불만사항
+            customer_2_detail: '', // 서비스불만사항 의견접수 내용
+            appearance_1: '', // 표지판(스티커)
+            appearance_2: '', // 장비외관
+            system_1: '', // 방방장비
+            system_2: '' // 영상장비
         }
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,17 +35,17 @@ export function InspectionForm() {
         setForm({
             branch: '중앙지사',
             name: '김철수',
-            contract_no: '12345678',
+            service_no: '12345678',
             business_name: '테스트 상점',
             activeCategory: 'system',
             subItems: {
-                customer_1: '양호',
-                customer_2: '양호',
+                customer_1: '없음',
+                customer_2: '없음',
+                customer_2_detail: '',
                 appearance_1: '양호',
                 appearance_2: '양호',
-                system_1: '양호',
-                system_2: '양호',
-                system_3: '양호'
+                system_1: '정상작동',
+                system_2: '정상작동'
             }
         });
     };
@@ -54,15 +54,14 @@ export function InspectionForm() {
         if (!form.activeCategory) return;
         const newSubItems = { ...form.subItems };
         if (form.activeCategory === 'customer') {
-            newSubItems.customer_1 = '조치완료';
-            newSubItems.customer_2 = '조치완료';
+            newSubItems.customer_1 = '없음';
+            newSubItems.customer_2 = '없음';
         } else if (form.activeCategory === 'appearance') {
-            newSubItems.appearance_1 = '조치완료';
-            newSubItems.appearance_2 = '조치완료';
+            newSubItems.appearance_1 = '양호';
+            newSubItems.appearance_2 = '양호';
         } else if (form.activeCategory === 'system') {
-            newSubItems.system_1 = '조치완료';
-            newSubItems.system_2 = '조치완료';
-            newSubItems.system_3 = '조치완료';
+            newSubItems.system_1 = '정상작동';
+            newSubItems.system_2 = '정상작동';
         }
         setForm({ ...form, subItems: newSubItems });
     };
@@ -105,13 +104,17 @@ export function InspectionForm() {
         let finalParts: string[] = [];
 
         if (form.subItems.customer_1 || form.subItems.customer_2) {
-            finalParts.push(`[고객소통] 안부:${form.subItems.customer_1 || '-'}, 보안:${form.subItems.customer_2 || '-'}`);
+            let customerStr = `[고객소통] 장비사용불편:${form.subItems.customer_1 || '-'}, 서비스불만:${form.subItems.customer_2 || '-'}`;
+            if (form.subItems.customer_2 === '의견접수' && form.subItems.customer_2_detail) {
+                customerStr += `(내역:${form.subItems.customer_2_detail})`;
+            }
+            finalParts.push(customerStr);
         }
         if (form.subItems.appearance_1 || form.subItems.appearance_2) {
-            finalParts.push(`[외관점검] 표지판:${form.subItems.appearance_1 || '-'}, 이물질:${form.subItems.appearance_2 || '-'}`);
+            finalParts.push(`[환경점검] 표지판:${form.subItems.appearance_1 || '-'}, 장비외관:${form.subItems.appearance_2 || '-'}`);
         }
-        if (form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) {
-            finalParts.push(`[시스템점검] 카메라:${form.subItems.system_1 || '-'}, 리더기:${form.subItems.system_2 || '-'}, 락:${form.subItems.system_3 || '-'}`);
+        if (form.subItems.system_1 || form.subItems.system_2) {
+            finalParts.push(`[시스템] 방범장비:${form.subItems.system_1 || '-'}, 영상장비:${form.subItems.system_2 || '-'}`);
         }
 
         if (finalParts.length === 0) {
@@ -132,7 +135,7 @@ export function InspectionForm() {
 
         fd.append('branch', form.branch);
         fd.append('name', form.name);
-        fd.append('contract_no', form.contract_no);
+        fd.append('contract_no', form.service_no);
         fd.append('business_name', form.business_name);
         fd.append('activity_type', finalActivityType);
         fd.append('mock_mode', 'true');
@@ -158,17 +161,17 @@ export function InspectionForm() {
             setForm({
                 branch: '',
                 name: '',
-                contract_no: '',
+                service_no: '',
                 business_name: '',
                 activeCategory: '',
                 subItems: {
                     customer_1: '',
                     customer_2: '',
+                    customer_2_detail: '',
                     appearance_1: '',
                     appearance_2: '',
                     system_1: '',
-                    system_2: '',
-                    system_3: ''
+                    system_2: ''
                 }
             });
             setPhotos([]);
@@ -279,14 +282,27 @@ export function InspectionForm() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div className="space-y-2">
-                        <label className={`text-sm font-bold ml-1 ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>담당자</label>
+                        <label className={`text-sm font-bold ml-1 ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>방문자</label>
                         <input
                             type="text"
-                            placeholder="성함 입력"
+                            placeholder="방문자 성함"
                             value={form.name}
                             onChange={e => setForm({ ...form, name: e.target.value })}
+                            className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none font-bold ${theme === 'premium-dark'
+                                ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
+                                : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
+                                }`}
+                        />
+                    </div>
+                    <div className="space-y-2">
+                        <label className={`text-sm font-bold ml-1 ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>서비스번호</label>
+                        <input
+                            type="text"
+                            placeholder="서비스번호"
+                            value={form.service_no}
+                            onChange={e => setForm({ ...form, service_no: e.target.value })}
                             className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none font-bold ${theme === 'premium-dark'
                                 ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
                                 : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
@@ -330,9 +346,9 @@ export function InspectionForm() {
 
                     <div className={`flex p-1.5 rounded-[1.5rem] gap-1.5 ${theme === 'premium-dark' ? 'bg-slate-900/50' : 'bg-slate-200/50'}`}>
                         {[
-                            { id: 'customer', label: '고객', emoji: '🤝', isComplete: !!(form.subItems.customer_1 || form.subItems.customer_2) },
-                            { id: 'system', label: '시스템', emoji: '⚙️', isComplete: !!(form.subItems.system_1 || form.subItems.system_2 || form.subItems.system_3) },
-                            { id: 'appearance', label: '외관', emoji: '🏢', isComplete: !!(form.subItems.appearance_1 || form.subItems.appearance_2) },
+                            { id: 'appearance', label: '환경', emoji: '🏢', isComplete: !!(form.subItems.appearance_1 || form.subItems.appearance_2) },
+                            { id: 'customer', label: '소통', emoji: '🤝', isComplete: !!(form.subItems.customer_1 || form.subItems.customer_2) },
+                            { id: 'system', label: '시스템', emoji: '⚙️', isComplete: !!(form.subItems.system_1 || form.subItems.system_2) },
                         ].map((cat) => (
                             <button
                                 key={cat.id}
@@ -363,95 +379,149 @@ export function InspectionForm() {
                     <div className="animate-fadeIn min-h-[160px]">
                         {form.activeCategory === 'customer' && (
                             <div className="space-y-5">
-                                {[
-                                    { id: 'customer_1', label: '안부인사 및 불편사항 점검' },
-                                    { id: 'customer_2', label: '보안 이슈 사전 청취' }
-                                ].map((item) => (
-                                    <div key={item.id} className="space-y-2">
-                                        <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</label>
-                                        <div className="relative">
-                                            <select
-                                                value={(form.subItems as any)[item.id]}
-                                                onChange={e => setForm({ ...form, subItems: { ...form.subItems, [item.id]: e.target.value } })}
-                                                className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
-                                                    ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
-                                                    : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
-                                                    }`}
-                                            >
-                                                <option value="">상태 선택</option>
-                                                <option value="양호">양호</option>
-                                                <option value="조치완료">조치완료</option>
-                                                <option value="해당없음">해당없음</option>
-                                            </select>
-                                            <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                            </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>장비사용 불편사항</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.customer_1}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_1: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="없음">없음</option>
+                                            <option value="의견접수">의견접수</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>서비스불만사항</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.customer_2}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="없음">없음</option>
+                                            <option value="의견접수">의견접수</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                    {form.subItems.customer_2 === '의견접수' && (
+                                        <div className="mt-2 animate-fadeIn">
+                                            <textarea
+                                                placeholder="의견접수 내용을 입력해주세요"
+                                                value={form.subItems.customer_2_detail}
+                                                onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2_detail: e.target.value } })}
+                                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none font-medium text-sm min-h-[80px] ${theme === 'premium-dark'
+                                                    ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
+                                                    : 'bg-slate-50 border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-400 shadow-inner'
+                                                    }`}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         )}
 
                         {form.activeCategory === 'appearance' && (
                             <div className="space-y-5">
-                                {[
-                                    { id: 'appearance_1', label: '표지판(스티커) 교체' },
-                                    { id: 'appearance_2', label: '장비 이물질 제거(환경개선)' }
-                                ].map((item) => (
-                                    <div key={item.id} className="space-y-2">
-                                        <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</label>
-                                        <div className="relative">
-                                            <select
-                                                value={(form.subItems as any)[item.id]}
-                                                onChange={e => setForm({ ...form, subItems: { ...form.subItems, [item.id]: e.target.value } })}
-                                                className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
-                                                    ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
-                                                    : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
-                                                    }`}
-                                            >
-                                                <option value="">상태 선택</option>
-                                                <option value="양호">양호</option>
-                                                <option value="조치완료">조치완료</option>
-                                                <option value="해당없음">해당없음</option>
-                                            </select>
-                                            <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                            </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>표지판(스티커)</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.appearance_1}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_1: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="양호">양호</option>
+                                            <option value="교체완료">교체완료</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>장비외관</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.appearance_2}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, appearance_2: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="양호">양호</option>
+                                            <option value="청소완료">청소완료</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
                         {form.activeCategory === 'system' && (
                             <div className="space-y-5">
-                                {[
-                                    { id: 'system_1', label: '카메라 정상 작동 확인' },
-                                    { id: 'system_2', label: '영상저장장치 리더기 점검' },
-                                    { id: 'system_3', label: '락 정상 작동여부 확인' }
-                                ].map((item) => (
-                                    <div key={item.id} className="space-y-2">
-                                        <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</label>
-                                        <div className="relative">
-                                            <select
-                                                value={(form.subItems as any)[item.id]}
-                                                onChange={e => setForm({ ...form, subItems: { ...form.subItems, [item.id]: e.target.value } })}
-                                                className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
-                                                    ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
-                                                    : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
-                                                    }`}
-                                            >
-                                                <option value="">상태 선택</option>
-                                                <option value="양호">양호</option>
-                                                <option value="조치완료">조치완료</option>
-                                                <option value="해당없음">해당없음</option>
-                                            </select>
-                                            <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                            </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>방범장비</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.system_1}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_1: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="정상작동">정상작동</option>
+                                            <option value="조치완료">조치완료</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className={`text-xs font-bold px-1 tracking-tight ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-500'}`}>영상장비</label>
+                                    <div className="relative">
+                                        <select
+                                            value={form.subItems.system_2}
+                                            onChange={e => setForm({ ...form, subItems: { ...form.subItems, system_2: e.target.value } })}
+                                            className={`w-full px-5 py-3 rounded-2xl border-2 transition-all outline-none appearance-none font-black text-sm cursor-pointer ${theme === 'premium-dark'
+                                                ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500'
+                                                : 'bg-white border-white text-slate-800 focus:border-blue-500 shadow-sm'
+                                                }`}
+                                        >
+                                            <option value="">상태 선택</option>
+                                            <option value="정상작동">정상작동</option>
+                                            <option value="조치완료">조치완료</option>
+                                        </select>
+                                        <div className={`absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors ${theme === 'premium-dark' ? 'text-slate-600' : 'text-slate-300'}`}>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
 

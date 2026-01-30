@@ -31,24 +31,7 @@ export function InspectionForm() {
 
     const branches = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사'];
 
-    const fillMockData = () => {
-        setForm({
-            branch: '중앙지사',
-            name: '김철수',
-            service_no: '12345678',
-            business_name: '테스트 상점',
-            activeCategory: 'system',
-            subItems: {
-                customer_1: '없음',
-                customer_2: '없음',
-                customer_2_detail: '',
-                appearance_1: '양호',
-                appearance_2: '양호',
-                system_1: '정상작동',
-                system_2: '정상작동'
-            }
-        });
-    };
+
 
     const setAllActionComplete = () => {
         if (!form.activeCategory) return;
@@ -235,20 +218,9 @@ export function InspectionForm() {
                 <div className="flex justify-between items-center mb-2 px-1">
                     <div className="space-y-1">
                         <h2 className={`text-2xl font-black tracking-tight ${theme === 'premium-dark' ? 'text-white' : 'text-slate-800'}`}>
-                            현장 점검 등록
+                            Plus One Care
                         </h2>
-                        <p className={`text-xs font-semibold uppercase tracking-widest ${theme === 'premium-dark' ? 'text-blue-400' : 'text-blue-600'}`}>v2.0 Premium</p>
                     </div>
-                    <button
-                        type="button"
-                        onClick={fillMockData}
-                        className={`text-xs font-bold px-3 py-1.5 rounded-full border transition-all ${theme === 'premium-dark'
-                            ? 'border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-blue-400'
-                            : 'border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-blue-600'
-                            }`}
-                    >
-                        샘플 데이터
-                    </button>
                 </div>
 
                 {errorMessage && (
@@ -418,19 +390,7 @@ export function InspectionForm() {
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
-                                    {form.subItems.customer_2 === '의견접수' && (
-                                        <div className="mt-2 animate-fadeIn">
-                                            <textarea
-                                                placeholder="의견접수 내용을 입력해주세요"
-                                                value={form.subItems.customer_2_detail}
-                                                onChange={e => setForm({ ...form, subItems: { ...form.subItems, customer_2_detail: e.target.value } })}
-                                                className={`w-full px-4 py-3 rounded-xl border-2 transition-all outline-none font-medium text-sm min-h-[80px] ${theme === 'premium-dark'
-                                                    ? 'bg-slate-900 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
-                                                    : 'bg-slate-50 border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-400 shadow-inner'
-                                                    }`}
-                                            />
-                                        </div>
-                                    )}
+
                                 </div>
                             </div>
                         )}
@@ -523,6 +483,51 @@ export function InspectionForm() {
                                     </div>
                                 </div>
                             </div>
+
+                        )}
+
+                        {form.activeCategory === 'system' && (
+                            <div className="space-y-4 animate-fadeIn mt-6 border-t pt-4 border-dashed border-gray-200">
+                                <div className="flex justify-between items-center ml-1">
+                                    <label className={`text-sm font-black ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>현장 사진 <span className="text-xs font-normal opacity-50 ml-1">(최대 3장)</span></label>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {imageUrls.map((url, idx) => (
+                                        <div key={idx} className={`relative aspect-square rounded-[1.8rem] overflow-hidden group border-2 shadow-inner transition-all hover:scale-105 active:scale-95 ${theme === 'premium-dark' ? 'border-slate-700' : 'border-slate-100'}`}>
+                                            <img src={url} alt="preview" className="w-full h-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(idx)}
+                                                className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center font-black text-[10px]"
+                                            >
+                                                <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                                삭제
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {imageUrls.length < 3 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className={`aspect-square rounded-[1.8rem] border-2 border-dashed flex flex-col items-center justify-center transition-all group active:scale-95 ${theme === 'premium-dark'
+                                                ? 'border-slate-700 bg-slate-800/20 text-slate-600 hover:border-blue-500 hover:text-blue-500 hover:bg-slate-800'
+                                                : 'border-slate-100 bg-white/50 text-slate-300 hover:border-blue-500 hover:text-blue-500 hover:bg-white shadow-sm'
+                                                }`}
+                                        >
+                                            <svg className="w-8 h-8 mb-1 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" /></svg>
+                                            <span className="text-[10px] font-black uppercase tracking-widest">Photo</span>
+                                        </button>
+                                    )}
+                                </div>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    capture="environment"
+                                    onChange={handleImageUpload}
+                                />
+                            </div>
                         )}
 
                         {!form.activeCategory && (
@@ -539,49 +544,7 @@ export function InspectionForm() {
                     </div>
                 </div>
 
-                {form.activeCategory === 'appearance' && (
-                    <div className="space-y-4 animate-fadeIn">
-                        <div className="flex justify-between items-center ml-1">
-                            <label className={`text-sm font-black ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>현장 사진 <span className="text-xs font-normal opacity-50 ml-1">(최대 3장)</span></label>
-                        </div>
-                        <div className="grid grid-cols-3 gap-3">
-                            {imageUrls.map((url, idx) => (
-                                <div key={idx} className={`relative aspect-square rounded-[1.8rem] overflow-hidden group border-2 shadow-inner transition-all hover:scale-105 active:scale-95 ${theme === 'premium-dark' ? 'border-slate-700' : 'border-slate-100'}`}>
-                                    <img src={url} alt="preview" className="w-full h-full object-cover" />
-                                    <button
-                                        type="button"
-                                        onClick={() => removeImage(idx)}
-                                        className="absolute inset-0 bg-red-600/90 text-white opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center font-black text-[10px]"
-                                    >
-                                        <svg className="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                                        삭제
-                                    </button>
-                                </div>
-                            ))}
-                            {imageUrls.length < 3 && (
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className={`aspect-square rounded-[1.8rem] border-2 border-dashed flex flex-col items-center justify-center transition-all group active:scale-95 ${theme === 'premium-dark'
-                                        ? 'border-slate-700 bg-slate-800/20 text-slate-600 hover:border-blue-500 hover:text-blue-500 hover:bg-slate-800'
-                                        : 'border-slate-100 bg-white/50 text-slate-300 hover:border-blue-500 hover:text-blue-500 hover:bg-white shadow-sm'
-                                        }`}
-                                >
-                                    <svg className="w-8 h-8 mb-1 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M12 4v16m8-8H4" /></svg>
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Photo</span>
-                                </button>
-                            )}
-                        </div>
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            className="hidden"
-                            accept="image/*"
-                            capture="environment"
-                            onChange={handleImageUpload}
-                        />
-                    </div>
-                )}
+
 
                 <div className="pt-4">
                     <button
@@ -602,7 +565,7 @@ export function InspectionForm() {
                         )}
                     </button>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

@@ -90,6 +90,17 @@ export function InspectionForm() {
         setImageUrls(prev => prev.filter((_, i) => i !== index));
     };
 
+    const handleMapSearch = () => {
+        if (!form.business_name) {
+            alert('상호명을 입력해주세요.');
+            return;
+        }
+        // Open map in new tab with search query for navigation/directions
+        // Using Kakao Map search URL which allows easy navigation
+        const query = encodeURIComponent(form.business_name);
+        window.open(`https://map.kakao.com/link/search/${query}`, '_blank');
+    };
+
     async function submit(e: React.FormEvent) {
         e.preventDefault();
 
@@ -293,18 +304,33 @@ export function InspectionForm() {
                                 }`}
                         />
                     </div>
+
                     <div className="space-y-2">
                         <label className={`text-sm font-bold ml-1 ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>상호명</label>
-                        <input
-                            type="text"
-                            placeholder="상호명 입력"
-                            value={form.business_name}
-                            onChange={e => setForm({ ...form, business_name: e.target.value })}
-                            className={`w-full px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none font-bold text-sm sm:text-base ${theme === 'premium-dark'
-                                ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
-                                : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
-                                }`}
-                        />
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                placeholder="상호명 입력"
+                                value={form.business_name}
+                                onChange={e => setForm({ ...form, business_name: e.target.value })}
+                                className={`flex-1 px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none font-bold text-sm sm:text-base ${theme === 'premium-dark'
+                                    ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
+                                    : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
+                                    }`}
+                            />
+                            <button
+                                type="button"
+                                onClick={handleMapSearch}
+                                className={`w-[3.5rem] flex items-center justify-center rounded-xl sm:rounded-[1.5rem] border-2 font-black transition-all active:scale-95 ${theme === 'premium-dark'
+                                    ? 'bg-slate-800/50 border-slate-700 text-blue-400 hover:bg-slate-800'
+                                    : 'bg-white border-slate-100 text-blue-600 hover:bg-blue-50 shadow-sm'
+                                    }`}
+                            >
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

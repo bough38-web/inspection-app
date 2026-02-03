@@ -131,7 +131,8 @@ export function AdminDashboard() {
     const [progress, setProgress] = useState(0);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | '' }>({ message: '', type: '' });
-    const [isDeleting, setIsDeleting] = useState(false);
+
+    const [storageStats, setStorageStats] = useState<{ usedBytes: number, maxBytes: number, percentage: number } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error') => {
         setToast({ message, type });
@@ -150,7 +151,15 @@ export function AdminDashboard() {
                 }
             })
             .catch(err => console.error('Failed to load data', err))
+            .catch(err => console.error('Failed to load data', err))
             .finally(() => setLoading(false));
+
+        fetch('/api/storage-stats')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.error) setStorageStats(data);
+            })
+            .catch(err => console.error('Failed to load storage stats', err));
     };
 
     useEffect(() => {
@@ -250,7 +259,9 @@ export function AdminDashboard() {
             if (result.ok) {
                 showToast(`${result.deleted}개의 항목이 삭제되었습니다.`, 'success');
                 setSelectedIds(new Set());
-                fetchInspections(); // Refresh list
+                showToast(`${result.deleted}개의 항목이 삭제되었습니다.`, 'success');
+                setSelectedIds(new Set());
+                fetchInspections(); // Refresh list and stats
             } else {
                 showToast('삭제 실패: ' + result.error, 'error');
             }
@@ -438,10 +449,26 @@ export function AdminDashboard() {
             </header>
 
             {/* Stats Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard title="총 등록 건수" count={filteredInspections.length} color="text-blue-600" />
                 <StatCard title="오늘 등록" count={filteredInspections.filter(i => new Date(i.created_at).toDateString() === new Date().toDateString()).length} color="text-indigo-600" />
                 <StatCard title="사진 파일" count={filteredInspections.reduce((acc, curr) => acc + curr.photo_count, 0)} color="text-purple-600" />
+                <div className={`p-6 rounded-2xl shadow-sm border border-gray-100 bg-white hover:shadow-md transition-shadow duration-300 transform hover:-translate-y-1`}>
+                    <p className="text-sm font-medium text-gray-400 mb-1">저장소 용량</p>
+                    <div className="flex flex-col gap-1">
+                        <p className="text-2xl font-bold text-emerald-600">
+                            {storageStats ? ((storageStats.usedBytes / 1024 / 1024).toFixed(1)) : '0'} MB
+                            <span className="text-sm text-gray-400 font-normal ml-1">/ {(storageStats?.maxBytes / 1024 / 1024).toFixed(0)} MB</span>
+                        </p>
+                        <div className="w-full h-2 bg-gray-100 rounded-full mt-1 overflow-hidden">
+                            <div
+                                className="h-full bg-emerald-500 rounded-full transition-all duration-1000"
+                                style={{ width: `${storageStats ? Math.min(storageStats.percentage, 100) : 0}%` }}
+                            />
+                        </div>
+                        <p className="text-xs text-gray-400 text-right mt-0.5">{storageStats ? (100 - storageStats.percentage).toFixed(1) : 100}% 남음</p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

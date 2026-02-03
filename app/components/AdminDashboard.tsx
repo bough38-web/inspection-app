@@ -131,7 +131,7 @@ export function AdminDashboard() {
     const [progress, setProgress] = useState(0);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | '' }>({ message: '', type: '' });
-
+    const [isDeleting, setIsDeleting] = useState(false);
     const [storageStats, setStorageStats] = useState<{ usedBytes: number, maxBytes: number, percentage: number } | null>(null);
 
     const showToast = (message: string, type: 'success' | 'error') => {
@@ -458,7 +458,7 @@ export function AdminDashboard() {
                     <div className="flex flex-col gap-1">
                         <p className="text-2xl font-bold text-emerald-600">
                             {storageStats ? ((storageStats.usedBytes / 1024 / 1024).toFixed(1)) : '0'} MB
-                            <span className="text-sm text-gray-400 font-normal ml-1">/ {(storageStats?.maxBytes / 1024 / 1024).toFixed(0)} MB</span>
+                            <span className="text-sm text-gray-400 font-normal ml-1">/ {storageStats ? (storageStats.maxBytes / 1024 / 1024).toFixed(0) : '0'} MB</span>
                         </p>
                         <div className="w-full h-2 bg-gray-100 rounded-full mt-1 overflow-hidden">
                             <div

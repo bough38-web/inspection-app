@@ -186,10 +186,10 @@ export function InspectionForm() {
     }
 
     return (
-        <div className={`min-h-screen transition-colors duration-500 py-6 px-4 ${theme === 'premium-dark' ? 'bg-[#0f172a]' : 'bg-slate-50'}`}>
+        <div className={`min-h-full sm:min-h-screen transition-colors duration-500 sm:py-6 sm:px-4 flex flex-col ${theme === 'premium-dark' ? 'bg-[#0f172a]' : 'bg-slate-50'}`}>
             <form
                 onSubmit={submit}
-                className={`w-full max-w-lg mx-auto space-y-6 p-8 rounded-[2.5rem] shadow-2xl transition-all duration-500 border ${theme === 'premium-dark'
+                className={`flex-1 w-full max-w-lg mx-auto space-y-3 sm:space-y-6 p-4 sm:p-8 rounded-none sm:rounded-[2.5rem] shadow-none sm:shadow-2xl transition-all duration-500 border-x-0 border-y-0 sm:border ${theme === 'premium-dark'
                     ? 'bg-slate-900/80 backdrop-blur-xl border-slate-700/50 text-white'
                     : 'bg-white/90 backdrop-blur-xl border-white/20 text-gray-800'
                     }`}
@@ -238,7 +238,7 @@ export function InspectionForm() {
                         <select
                             value={form.branch}
                             onChange={e => setForm({ ...form, branch: e.target.value })}
-                            className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none appearance-none font-bold cursor-pointer ${theme === 'premium-dark'
+                            className={`w-full px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none appearance-none font-bold cursor-pointer text-sm sm:text-base ${theme === 'premium-dark'
                                 ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 hover:bg-slate-800'
                                 : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 hover:border-slate-200 shadow-sm'
                                 }`}
@@ -262,7 +262,7 @@ export function InspectionForm() {
                             placeholder="방문자 성함"
                             value={form.name}
                             onChange={e => setForm({ ...form, name: e.target.value })}
-                            className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none font-bold ${theme === 'premium-dark'
+                            className={`w-full px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none font-bold text-sm sm:text-base ${theme === 'premium-dark'
                                 ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
                                 : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
                                 }`}
@@ -275,7 +275,7 @@ export function InspectionForm() {
                             placeholder="서비스번호"
                             value={form.service_no}
                             onChange={e => setForm({ ...form, service_no: e.target.value })}
-                            className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none font-bold ${theme === 'premium-dark'
+                            className={`w-full px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none font-bold text-sm sm:text-base ${theme === 'premium-dark'
                                 ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
                                 : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
                                 }`}
@@ -288,7 +288,7 @@ export function InspectionForm() {
                             placeholder="상호명 입력"
                             value={form.business_name}
                             onChange={e => setForm({ ...form, business_name: e.target.value })}
-                            className={`w-full px-5 py-4 rounded-[1.5rem] border-2 transition-all outline-none font-bold ${theme === 'premium-dark'
+                            className={`w-full px-4 py-3 sm:px-5 sm:py-4 rounded-xl sm:rounded-[1.5rem] border-2 transition-all outline-none font-bold text-sm sm:text-base ${theme === 'premium-dark'
                                 ? 'bg-slate-800/50 border-slate-700 text-white focus:border-blue-500 placeholder:text-slate-600'
                                 : 'bg-white border-slate-100 text-slate-800 focus:border-blue-500 placeholder:text-slate-300 shadow-sm'
                                 }`}
@@ -296,7 +296,7 @@ export function InspectionForm() {
                     </div>
                 </div>
 
-                <div className={`p-6 rounded-[2.5rem] space-y-6 border-2 transition-all ${theme === 'premium-dark'
+                <div className={`p-4 sm:p-6 rounded-2xl sm:rounded-[2.5rem] space-y-4 sm:space-y-6 border-2 transition-all flex-1 ${theme === 'premium-dark'
                     ? 'bg-slate-800/30 border-slate-700/50'
                     : 'bg-slate-50 border-slate-100'
                     }`}>
@@ -550,7 +550,7 @@ export function InspectionForm() {
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`group w-full h-20 rounded-[2.5rem] text-xl font-black tracking-tight shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-3 ${theme === 'premium-dark'
+                        className={`group w-full h-14 sm:h-20 rounded-xl sm:rounded-[2.5rem] text-lg sm:text-xl font-black tracking-tight shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-2 sm:gap-3 ${theme === 'premium-dark'
                             ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40 disabled:bg-slate-800'
                             : 'bg-slate-900 hover:bg-slate-800 text-white shadow-gray-300 disabled:bg-slate-300'
                             }`}

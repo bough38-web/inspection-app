@@ -2,10 +2,8 @@ import { InspectionForm } from './components/InspectionForm';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="w-full max-w-lg space-y-8">
-        <div className="text-center">
-        </div>
+    <main className="min-h-screen sm:min-h-0 h-[100dvh] bg-gray-50 flex items-center justify-center p-0 sm:py-12 sm:px-4">
+      <div className="w-full h-full sm:h-auto max-w-lg space-y-0 sm:space-y-8 flex flex-col sm:block">
         <InspectionForm />
       </div>
     </main>

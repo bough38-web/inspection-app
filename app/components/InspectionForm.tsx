@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { compressImageClient } from '@/lib/clientCompress';
@@ -28,8 +28,17 @@ export function InspectionForm() {
         }
     });
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const submitBtnRef = useRef<HTMLDivElement>(null);
 
     const branches = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사'];
+
+    useEffect(() => {
+        if (form.activeCategory === 'system' && submitBtnRef.current) {
+            setTimeout(() => {
+                submitBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
+        }
+    }, [form.activeCategory]);
 
 
 
@@ -254,7 +263,10 @@ export function InspectionForm() {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className={`grid grid-cols-3 gap-4 sticky top-0 z-20 py-2 -mx-2 px-2 rounded-b-xl ${theme === 'premium-dark'
+                    ? 'bg-slate-900/95 backdrop-blur-md shadow-lg shadow-slate-900/20 border-b border-slate-800'
+                    : 'bg-white/95 backdrop-blur-md shadow-lg shadow-slate-200/50 border-b border-slate-100'
+                    }`}>
                     <div className="space-y-2">
                         <label className={`text-sm font-bold ml-1 ${theme === 'premium-dark' ? 'text-slate-400' : 'text-slate-600'}`}>방문자</label>
                         <input
@@ -546,25 +558,27 @@ export function InspectionForm() {
 
 
 
-                <div className="pt-4">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className={`group w-full h-14 sm:h-20 rounded-xl sm:rounded-[2.5rem] text-lg sm:text-xl font-black tracking-tight shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-2 sm:gap-3 ${theme === 'premium-dark'
-                            ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40 disabled:bg-slate-800'
-                            : 'bg-slate-900 hover:bg-slate-800 text-white shadow-gray-300 disabled:bg-slate-300'
-                            }`}
-                    >
-                        {loading ? (
-                            <div className="w-7 h-7 border-[5px] border-white/20 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <>
-                                점검 결과 제출하기
-                                <svg className="w-6 h-6 transition-transform group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-                            </>
-                        )}
-                    </button>
-                </div>
+                {form.activeCategory === 'system' && (
+                    <div className="pt-4" ref={submitBtnRef}>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`group w-full h-14 sm:h-20 rounded-xl sm:rounded-[2.5rem] text-lg sm:text-xl font-black tracking-tight shadow-2xl transition-all active:scale-95 flex items-center justify-center gap-2 sm:gap-3 ${theme === 'premium-dark'
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-900/40 disabled:bg-slate-800'
+                                : 'bg-slate-900 hover:bg-slate-800 text-white shadow-gray-300 disabled:bg-slate-300'
+                                }`}
+                        >
+                            {loading ? (
+                                <div className="w-7 h-7 border-[5px] border-white/20 border-t-white rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    점검 결과 제출하기
+                                    <svg className="w-6 h-6 transition-transform group-hover:translate-x-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3.5} d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
             </form >
         </div >
     );

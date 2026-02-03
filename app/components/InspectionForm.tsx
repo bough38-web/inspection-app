@@ -274,7 +274,7 @@ export function InspectionForm() {
                     </div>
                 </div>
 
-                <div className={`grid grid-cols-3 gap-4 sticky top-0 z-20 py-2 -mx-2 px-2 rounded-b-xl ${theme === 'premium-dark'
+                <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 sm:sticky sm:top-0 z-20 py-2 -mx-2 px-2 rounded-xl sm:rounded-b-xl ${theme === 'premium-dark'
                     ? 'bg-slate-900/95 backdrop-blur-md shadow-lg shadow-slate-900/20 border-b border-slate-800'
                     : 'bg-white/95 backdrop-blur-md shadow-lg shadow-slate-200/50 border-b border-slate-100'
                     }`}>

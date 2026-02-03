@@ -24,6 +24,7 @@ export default function MapPage() {
     const [filteredTargets, setFilteredTargets] = useState<Target[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedTarget, setSelectedTarget] = useState<Target | null>(null);
+    const [mapCenter, setMapCenter] = useState({ lat: 37.5665, lng: 126.9780 });
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
@@ -71,9 +72,23 @@ export default function MapPage() {
     const handleNavigationClick = (target: Target) => {
         // Kakao Map URL Scheme
         // Web: https://map.kakao.com/link/to/Name,Lat,Lng
-        // Mobile App: kakaomap://route?ep=lat,lng&epname=Name
+        // This opens the "Directions" page with the destination preset. User just needs to confirm "Current Location" as start.
         const url = `https://map.kakao.com/link/to/${target.business_name},${target.lat},${target.lng}`;
         window.open(url, '_blank');
+    };
+
+    const handleMyLocation = () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setMapCenter({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                },
+                (err) => alert("위치 정보를 확인할 수 없습니다.")
+            );
+        }
     };
 
     if (loadingSdk || loading) {
@@ -110,8 +125,19 @@ export default function MapPage() {
                 </div>
             </div>
 
+            {/* My Location Button */}
+            <div className="absolute bottom-6 right-4 z-20">
+                <button
+                    onClick={handleMyLocation}
+                    className="bg-white shadow-lg rounded-full p-4 hover:bg-blue-50 text-blue-600 transition-all active:scale-95 border border-blue-100"
+                    title="내 위치로 이동"
+                >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </button>
+            </div>
+
             <Map
-                center={{ lat: 37.5665, lng: 126.9780 }} // Default Seoul
+                center={mapCenter}
                 style={{ width: '100%', height: '100%' }}
                 level={9}
                 onClick={() => setSelectedTarget(null)}

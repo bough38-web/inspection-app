@@ -466,7 +466,12 @@ export function AdminDashboard() {
                                 style={{ width: `${storageStats ? Math.min(storageStats.percentage, 100) : 0}%` }}
                             />
                         </div>
-                        <p className="text-xs text-gray-400 text-right mt-0.5">{storageStats ? (100 - storageStats.percentage).toFixed(1) : 100}% 남음</p>
+                        <div className="flex justify-between items-end mt-0.5">
+                            <p className="text-xs text-emerald-600 font-medium">
+                                {storageStats ? `약 ${Math.floor((storageStats.maxBytes - storageStats.usedBytes) / (450 * 1024)).toLocaleString()}개 시설 저장 가능` : '-'}
+                            </p>
+                            <p className="text-xs text-gray-400 text-right">{storageStats ? (100 - storageStats.percentage).toFixed(1) : 100}% 남음</p>
+                        </div>
                     </div>
                 </div>
             </div>

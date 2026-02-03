@@ -45,10 +45,10 @@ export default function LoginPage() {
                 '강북지사': 'rkdqnr',
                 '서대문지사': 'tjeoans',
                 '고양지사': 'rhdid',
-                '의정부지사': 'dmlwjdqn',
+                '의정부지사': 'ktt7104!',
                 '남양주지사': 'skadidwn',
                 '강릉지사': 'rkdfmd',
-                '원주지사': 'dnjswn'
+                '원주지사': 'dnjswn1'
             };
 
             const correctPassword = branchPasswords[selectedBranch];

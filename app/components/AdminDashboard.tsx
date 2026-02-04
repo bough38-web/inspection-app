@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Button } from './ui/Button';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { ProgressDashboard } from './ProgressDashboard';
 
 interface Inspection {
     id: string;
@@ -388,8 +389,14 @@ export function AdminDashboard() {
     const sortedManagers = Object.entries(managerStats).sort((a, b) => b[1] - a[1]);
     const maxManagerCount = Math.max(...Object.values(managerStats), 1);
 
+    const [viewMode, setViewMode] = useState<'list' | 'progress'>('list');
+
     if (!userRole) {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div></div>;
+    }
+
+    if (viewMode === 'progress') {
+        return <ProgressDashboard inspections={filteredInspections} onBack={() => setViewMode('list')} />;
     }
 
     return (
@@ -408,6 +415,12 @@ export function AdminDashboard() {
                 </div>
 
                 <div className="mt-4 md:mt-0 flex items-center gap-3">
+                    <Button
+                        onClick={() => setViewMode('progress')}
+                        className="px-5 py-2.5 rounded-xl font-semibold bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg hover:shadow-blue-500/30 transition-all transform hover:scale-105"
+                    >
+                        📊 진행현황 대시보드
+                    </Button>
                     <Button
                         variant="secondary"
                         onClick={handleLogout}

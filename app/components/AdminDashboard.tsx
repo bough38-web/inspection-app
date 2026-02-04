@@ -422,13 +422,6 @@ export function AdminDashboard() {
                         📊 진행현황 대시보드
                     </Button>
                     <Button
-                        variant="secondary"
-                        onClick={handleLogout}
-                        className="px-4 py-2.5 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors shadow-sm"
-                    >
-                        로그아웃
-                    </Button>
-                    <Button
                         onClick={() => downloadExcel(false)}
                         disabled={generatingExcel}
                         className={`px-5 py-2.5 rounded-xl font-semibold shadow-lg transition-all transform hover:scale-105 ${generatingExcel
@@ -458,6 +451,13 @@ export function AdminDashboard() {
                             초기화 (더블클릭)
                         </Button>
                     )}
+                    <Button
+                        variant="secondary"
+                        onClick={handleLogout}
+                        className="px-4 py-2.5 rounded-xl font-semibold bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors shadow-sm"
+                    >
+                        로그아웃
+                    </Button>
                 </div>
             </header>
 

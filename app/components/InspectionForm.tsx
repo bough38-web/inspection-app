@@ -1,10 +1,13 @@
 'use client';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { compressImageClient } from '@/lib/clientCompress';
 
-export function InspectionForm() {
+function InspectionFormContent() {
+
+
     const [photos, setPhotos] = useState<File[]>([]);
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -31,6 +34,25 @@ export function InspectionForm() {
     const submitBtnRef = useRef<HTMLDivElement>(null);
 
     const branches = ['중앙지사', '강북지사', '서대문지사', '고양지사', '의정부지사', '남양주지사', '강릉지사', '원주지사'];
+
+    const searchParams = useSearchParams();
+
+    useEffect(() => {
+        const business_name = searchParams.get('business_name');
+        const branch = searchParams.get('branch');
+        const name = searchParams.get('name'); // This maps to manager in target
+        const service_no = searchParams.get('service_no');
+
+        if (business_name || branch || name || service_no) {
+            setForm(prev => ({
+                ...prev,
+                business_name: business_name || prev.business_name,
+                branch: branch || prev.branch,
+                name: name || prev.name,
+                service_no: service_no || prev.service_no
+            }));
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (form.activeCategory === 'system' && submitBtnRef.current) {
@@ -607,5 +629,13 @@ export function InspectionForm() {
                 )}
             </form >
         </div >
+    );
+}
+
+export function InspectionForm() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <InspectionFormContent />
+        </Suspense>
     );
 }

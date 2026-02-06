@@ -285,7 +285,7 @@ export function AdminDashboard() {
             // Define Columns
             sheet.columns = [
                 { header: 'ID', key: 'id', width: 15 },
-                { header: '날짜', key: 'date', width: 15 },
+                { header: '날짜', key: 'date', width: 22 },
                 { header: '지사', key: 'branch', width: 10 },
                 { header: '방문자', key: 'name', width: 10 },
                 { header: '서비스번호', key: 'contract_no', width: 15 },
@@ -321,7 +321,7 @@ export function AdminDashboard() {
                 const details = parseActivityDetails(item.activity_type || '');
                 row.values = {
                     id: item.id,
-                    date: new Date(item.created_at).toLocaleDateString(),
+                    date: new Date(item.created_at).toLocaleString('ko-KR'),
                     branch: item.branch,
                     name: item.name,
                     contract_no: item.contract_no, // Will be empty for new items

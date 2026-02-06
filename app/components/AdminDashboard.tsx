@@ -400,7 +400,7 @@ export function AdminDashboard() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-8 animate-fade-in">
+        <div className="w-full px-4 sm:px-6 lg:px-8 space-y-8 animate-fade-in">
             {/* Toast Notification */}
             <Toast message={toast.message} type={toast.type as any} />
 
@@ -639,7 +639,7 @@ export function AdminDashboard() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded inline-block max-w-[150px] truncate">
+                                                <span className="text-xs text-gray-800 bg-gray-50 px-3 py-2 rounded inline-block w-full break-keep leading-relaxed whitespace-pre-wrap">
                                                     {item.activity_type || '-'}
                                                 </span>
                                             </td>

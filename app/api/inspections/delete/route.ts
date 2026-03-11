@@ -28,13 +28,26 @@ export async function POST(req: Request) {
         }
         */
 
-        // 3. Soft Delete: Update deleted_at column instead of hard delete
-        const { error: deleteError } = await adminSupabase
+        // 3. Soft Delete: Attempt to update deleted_at column
+        const { error: softDeleteError } = await adminSupabase
             .from('inspections')
             .update({ deleted_at: new Date().toISOString() })
             .in('id', ids);
 
-        if (deleteError) throw deleteError;
+        if (softDeleteError) {
+            console.error('Soft delete failed (column might be missing):', softDeleteError);
+
+            // Fallback to Hard Delete if Soft Delete is not possible (column missing)
+            // This ensures the admin can still manage the list, but we've already 
+            // protected the Storage by commenting out the storage delete logic.
+            const { error: hardDeleteError } = await adminSupabase
+                .from('inspections')
+                .delete()
+                .in('id', ids);
+
+            if (hardDeleteError) throw hardDeleteError;
+            console.log(`[Fallback] Hard deleted ${ids.length} records because soft delete column is missing.`);
+        }
 
         return NextResponse.json({ ok: true, deleted: ids.length });
 

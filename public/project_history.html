@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>프로젝트 개발 히스토리</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Mermaid JS for diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</head>
+
+<body class="bg-gray-50 p-8 min-h-screen">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">🚀 프로젝트 개발 히스토리</h1>
+        <p class="text-gray-500 mb-8">현장 점검 앱 개발 진행 상황 및 배포 로그</p>
+
+        <!-- Diagram Section -->
+        <div class="mb-10">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 border-l-4 border-blue-500 pl-3">워크플로우 다이어그램</h2>
+            <div class="bg-white border text-center rounded-xl p-4 overflow-x-auto shadow-sm">
+                <div class="mermaid">
+                    gitGraph
+                    commit id: "e7e4716" tag: "Initial State"
+                    branch feature/dashboard
+                    checkout feature/dashboard
+                    commit id: "impl" type: HIGHLIGHT msg: "Implemented Charts"
+                    commit id: "intg" type: HIGHLIGHT msg: "Integrated in Admin"
+                    checkout main
+                    commit id: "0f0f9ca" msg: "Remote Changes"
+                    checkout feature/dashboard
+                    merge main id: "9cce52a" tag: "Local Commit"
+                    checkout main
+                    merge feature/dashboard id: "conflict" type: REVERSE msg: "Push Failed (Conflict)"
+                    commit id: "resolve" type: HIGHLIGHT msg: "Resolve Conflict (package-lock)"
+                    merge feature/dashboard id: "0582b16" tag: "Deployed"
+                    commit id: "26718a5" msg: "Move Logout Button"
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div>
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 border-l-4 border-green-500 pl-3">상세 활동 로그</h2>
+            <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">단계</th>
+                            <th scope="col" class="px-6 py-3">작업 (Action)</th>
+                            <th scope="col" class="px-6 py-3">설명 (Description)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">1. Development</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Impl</span>
+                                Dashboard</td>
+                            <td class="px-6 py-4">ProgressDashboard.tsx 생성 (Recharts 적용), AdminDashboard.tsx 통합</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">2. Commit</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-gray-100 text-gray-800 text-xs font-medium px-2.5 py-0.5 rounded">Git
+                                    Commit</span></td>
+                            <td class="px-6 py-4">로컬 커밋 (feat: Add Progress Dashboard...)</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">3. Push Attempt</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Error</span>
+                                Push</td>
+                            <td class="px-6 py-4">원격 저장소 변경 사항으로 인해 Push 실패 (Remote Changes Detect)</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">4. Synchronization</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded">Git
+                                    Pull</span></td>
+                            <td class="px-6 py-4">Remote 변경 사항 Pull, <code>package-lock.json</code> 충돌 발생</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">5. Resolution</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Fixed</span>
+                            </td>
+                            <td class="px-6 py-4"><code>npm install</code>로 lock 파일 재생성하여 충돌 해결</td>
+                        </tr>
+                        <tr class="bg-white border-b hover:bg-gray-50">
+                            <td class="px-6 py-4 font-medium text-gray-900">6. Deployment</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Deployed</span>
+                            </td>
+                            <td class="px-6 py-4">성공적으로 Merge 및 Push 완료</td>
+                        </tr>
+                        <tr class="bg-green-50 border-b hover:bg-green-100">
+                            <td class="px-6 py-4 font-medium text-gray-900">7. Refinement</td>
+                            <td class="px-6 py-4"><span
+                                    class="bg-indigo-100 text-indigo-800 text-xs font-medium px-2.5 py-0.5 rounded">Update</span>
+                            </td>
+                            <td class="px-6 py-4">로그아웃 버튼 위치 이동 및 추가 Push 완료</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-8 text-center text-xs text-gray-400">
+            Generated by Agentic Assistant • Last Updated: 2026-02-04
+        </div>
+    </div>
+</body>
+
+</html>

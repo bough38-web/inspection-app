@@ -9,6 +9,7 @@ export async function GET() {
         const { data, error } = await adminSupabase
             .from('inspections')
             .select('*')
+            .is('deleted_at', null)
             .order('created_at', { ascending: false });
 
         if (error) {

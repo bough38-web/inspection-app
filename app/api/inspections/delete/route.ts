@@ -11,22 +11,9 @@ export async function POST(req: Request) {
 
         console.log(`[Batch Delete] Request to delete ${ids.length} items.`);
 
-        // 1. Fetch paths to delete storage files
-        const { data: itemsToDelete, error: fetchError } = await adminSupabase
-            .from('inspections')
-            .select('id, folder_path')
-            .in('id', ids);
-
-        if (fetchError) throw fetchError;
-
-        // 2. Delete Storage Files
+        /* Storage Protection: Do not delete photos during Soft Delete
         for (const item of itemsToDelete) {
             if (item.folder_path) {
-                // We need to empty the folder first.
-                // Since folder_path is like "2024-01-01/uuid", we list files in it.
-                // However, Supabase remove() takes full paths to files.
-                // We know files are usually 1.webp, 2.webp, 3.webp.
-                // Safer: List files in that folder.
                 const { data: files } = await adminSupabase.storage
                     .from('inspections')
                     .list(item.folder_path);
@@ -39,11 +26,12 @@ export async function POST(req: Request) {
                 }
             }
         }
+        */
 
-        // 3. Delete DB Rows
+        // 3. Soft Delete: Update deleted_at column instead of hard delete
         const { error: deleteError } = await adminSupabase
             .from('inspections')
-            .delete()
+            .update({ deleted_at: new Date().toISOString() })
             .in('id', ids);
 
         if (deleteError) throw deleteError;

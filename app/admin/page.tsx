@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AdminDashboard } from '../components/AdminDashboard';
+import { NoticeModal } from '../components/NoticeModal';
 
 export default function AdminPage() {
     const router = useRouter();
@@ -24,6 +25,7 @@ export default function AdminPage() {
 
     return (
         <main className="min-h-screen bg-gray-50 py-8">
+            <NoticeModal />
             <AdminDashboard />
         </main>
     );
